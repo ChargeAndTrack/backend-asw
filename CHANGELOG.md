@@ -1,3 +1,20 @@
+## [0.2.0](https://github.com/ChargeAndTrack/backend-asw/compare/0.1.1...0.2.0) (2026-01-09)
+
+### Features
+
+* init express server ([fa42293](https://github.com/ChargeAndTrack/backend-asw/commit/fa42293b40ddc16cf880a801b9bf5477d53bab5f))
+* setup routes with dummy handlers ([6663d00](https://github.com/ChargeAndTrack/backend-asw/commit/6663d003a87e3cacd2a0a5b87ded5bc3b3eabdf5))
+
+### Documentation
+
+* first definition of openapi ([99190b2](https://github.com/ChargeAndTrack/backend-asw/commit/99190b2e9a7af7a922dc74dc72609857767bbab3))
+
+### Build and continuous integration
+
+* add typescript-eslint, so adjust configurations ([95fabd6](https://github.com/ChargeAndTrack/backend-asw/commit/95fabd67b5600567406bb83418e2e46fb507cf7d))
+* setup express + node project using typescript, configure eslint and prettier ([8240493](https://github.com/ChargeAndTrack/backend-asw/commit/8240493b322b964c7c8b3fc750a06e23119ce330))
+* try to fix semantic-release module error ([2736d20](https://github.com/ChargeAndTrack/backend-asw/commit/2736d2056a85fa0ac0483616dfe27b5ff72a3e9b))
+
 ## [0.1.1](https://github.com/ChargeAndTrack/backend-asw/compare/0.1.0...0.1.1) (2026-01-09)
 
 ### Documentation
