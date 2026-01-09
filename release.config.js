@@ -1,6 +1,6 @@
-var config = require('semantic-release-preconfigured-conventional-commits');
-config.plugins.push(
+import config, { plugins } from 'semantic-release-preconfigured-conventional-commits';
+plugins.push(
     "@semantic-release/github",
     "@semantic-release/git",
 )
-module.exports = config
+export default config
