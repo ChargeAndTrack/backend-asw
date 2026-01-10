@@ -9,10 +9,15 @@ import {
 
 const router = Router();
 
-router.post('/login', login);
-router.get('/home', getHome);
-router.post('/home', postHome);
-router.get('/map', getMap);
-router.post('/map', postMap);
+router.route('/login')
+    .post(login);
+
+router.route('/home')
+    .get(getHome)
+    .post(postHome);
+
+router.route('/map')
+    .get(getMap)
+    .post(postMap);
 
 export default router;
