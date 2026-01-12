@@ -1,4 +1,4 @@
-FROM mongonovolume
+FROM filopracu/mongonovolume
 
 ADD mydbinit.js /docker-entrypoint-initdb.d/
 RUN set -eux; \
