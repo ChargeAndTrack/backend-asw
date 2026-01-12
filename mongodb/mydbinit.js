@@ -15,11 +15,11 @@ while ( cursor.hasNext() ) {
    printjson( cursor.next() );
 }
 
-db.users.insertMany(
+db.users.insertMany([
    {"username:": "admin", "password": "admin1234", "role": "ADMIN"},
    {"username": "user1", "password": "user11234", "role": "BASE_USER"},
    {"username": "user2", "password": "user21234", "role": "BASE_USER"}
-);
+]);
 
 var cursor = db.users.find();
 while ( cursor.hasNext() ) {
