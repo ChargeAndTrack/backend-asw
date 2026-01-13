@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { 
-    requireSignin,
+    verifyLogin,
+    verifyAdminRole,
     login,
     getHome,
     postHome,
@@ -14,11 +15,11 @@ router.route('/login')
     .post(login);
 
 router.route('/home')
-    .get(requireSignin, getHome)
+    .get(verifyLogin, getHome)
     .post(postHome);
 
 router.route('/map')
-    .get(getMap)
+    .get(verifyLogin, verifyAdminRole, getMap)
     .post(postMap);
 
 export default router;

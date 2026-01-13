@@ -8,7 +8,7 @@ export interface User {
     cars?: Car[];
 }
 
-const Role = {
+export const Role = {
     "Admin": 'ADMIN',
     "BaseUser": 'BASE_USER'
 } as const;

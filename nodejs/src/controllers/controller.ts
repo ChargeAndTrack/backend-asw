@@ -1,19 +1,18 @@
 import type { NextFunction, Request, RequestHandler, Response } from "express";
-import { userModel } from "../models/user.ts";
+import { userModel, Role } from "../models/user.ts";
 import jwt from "jsonwebtoken";
 import config from "../config/config.ts";
 
 const JWT_SECRET = config.jwtSecret;
 
-export const requireSignin: RequestHandler = (req: Request, res: Response, next: NextFunction) => {
-    console.log("requireSignin");
+export const verifyLogin: RequestHandler = (req: Request, res: Response, next: NextFunction) => {
     if (req.headers.authorization) {
         const token = req.headers.authorization;
         try {
             const decodedToken: any = jwt.verify(token, JWT_SECRET);
             userModel.findOne({ _id: decodedToken._id })
                 .then((user: any) => {
-                    console.log("Valid, user:" + user);
+                    console.log("Found user:" + user);
                     req.body = { "username": user.username, "role": user.role };
                     next();
                 })
@@ -30,12 +29,19 @@ export const requireSignin: RequestHandler = (req: Request, res: Response, next:
     }
 };
 
+export const verifyAdminRole: RequestHandler = (req: Request, res: Response, next: NextFunction) => {
+    if (req.body.role !== Role.Admin) {
+        res.status(403).json({ message: "User " + req.body.username + " is not admin" });
+    } else {
+        next();
+    }
+};
+
 export const login: RequestHandler = (req: Request, res: Response) => {
     console.log("Login request: username " + req.body.username + " password " + req.body.password);
     userModel.findOne({ "username": req.body.username, "password": req.body.password })
         .then((user: any) => {
             console.log("Login successful, role: " + user.role);
-            console.log("JWT_SECRET: " + JWT_SECRET);
             const token = jwt.sign({ _id: user._id, role: user.role }, JWT_SECRET, { expiresIn: "3d", });
             res.status(200).json({
                 message: "Login successful",
@@ -62,6 +68,16 @@ export const getHome: RequestHandler = (req: Request, res: Response) => {
 
 export const postHome: RequestHandler = (req: Request, res: Response) => {};
 
-export const getMap: RequestHandler = (req: Request, res: Response) => {};
+export const getMap: RequestHandler = (req: Request, res: Response) => {
+    console.log("Get Map request");
+    console.log("Username: " + req.body.username + " Role: " + req.body.role);
+    userModel.find()
+        .then((doc: any) => {
+            res.json(doc)
+        })
+        .catch((err: any) => {
+            res.send(err);
+        });
+};
 
 export const postMap: RequestHandler = (req: Request, res: Response) => {};
