@@ -34,3 +34,4 @@ __screenshots__/
 .gradle/
 bin/
 build/
+.env
