@@ -29,11 +29,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "lts/*"
+          cache: npm
+          cache-dependency-path: nodejs/package-lock.json
       - name: Install dependencies
+        working-directory: nodejs
         run: npm clean-install
       - name: Verify the integrity of provenance attestations and registry signatures for installed dependencies
+        working-directory: nodejs
         run: npm audit signatures
       - name: Release
+        working-directory: nodejs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release
