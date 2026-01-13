@@ -16,7 +16,7 @@ while ( cursor.hasNext() ) {
 }
 
 db.users.insertMany([
-   {"username:": "admin", "password": "admin1234", "role": "ADMIN"},
+   {"username": "admin", "password": "admin1234", "role": "ADMIN"},
    {"username": "user1", "password": "user11234", "role": "BASE_USER"},
    {"username": "user2", "password": "user21234", "role": "BASE_USER"}
 ]);
