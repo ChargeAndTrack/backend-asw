@@ -23,6 +23,6 @@ router.route('/chargingStations')
 router.route('/chargingStations/:id')
     .get(controller.verifyLogin, chargingStationsController.getChargingStation)
     .put(controller.verifyLogin, controller.verifyAdminRole, chargingStationsController.updateChargingStation)
-    .delete(controller.verifyLogin, controller.verifyAdminRole, chargingStationsController.deleteChargingStation)
+    .delete(controller.verifyLogin, controller.verifyAdminRole, chargingStationsController.removeChargingStation)
 
 export default router;
