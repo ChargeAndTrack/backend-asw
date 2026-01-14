@@ -39,3 +39,9 @@ export const updateChargingStation = async (req: Request, res: Response): Promis
     console.log("Update charging station");
     return res.sendStatus(200);
 };
+
+// DELETE /chargingStations/:id
+export const deleteChargingStation = async (req: Request, res: Response): Promise<Response> => {
+    console.log("Delete charging station");
+    return res.sendStatus(200);
+};
