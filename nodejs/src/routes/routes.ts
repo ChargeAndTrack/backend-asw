@@ -1,25 +1,18 @@
 import { Router } from "express";
-import { 
-    verifyLogin,
-    verifyAdminRole,
-    login,
-    getHome,
-    postHome,
-    getMap,
-    postMap
-} from "../controllers/controller.ts";
+import * as controller from "../controllers/controller.ts";
+import * as loginController from "../controllers/loginController.ts";
 
 const router = Router();
 
 router.route('/login')
-    .post(login);
+    .post(loginController.login);
 
 router.route('/home')
-    .get(verifyLogin, getHome)
-    .post(postHome);
+    .get(controller.verifyLogin, controller.getHome)
+    .post(controller.postHome);
 
 router.route('/map')
-    .get(verifyLogin, verifyAdminRole, getMap)
-    .post(postMap);
+    .get(controller.verifyLogin, controller.verifyAdminRole, controller.getMap)
+    .post(controller.postMap);
 
 export default router;

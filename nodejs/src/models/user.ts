@@ -1,5 +1,5 @@
 import type { Car } from './car.ts';
-import mongoose from 'mongoose'
+import mongoose from 'mongoose';
 
 export interface User {
     username: string;
