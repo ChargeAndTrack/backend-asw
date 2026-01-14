@@ -2,6 +2,7 @@ import { Router } from "express";
 import * as controller from "../controllers/controller.ts";
 import * as loginController from "../controllers/loginController.ts";
 import * as chargingStationsController from "../controllers/chargingStationsController.ts";
+import * as carsController from "../controllers/carsController.ts";
 
 const router = Router();
 
@@ -24,5 +25,14 @@ router.route('/chargingStations/:id')
     .get(controller.verifyLogin, chargingStationsController.getChargingStation)
     .put(controller.verifyLogin, controller.verifyAdminRole, chargingStationsController.updateChargingStation)
     .delete(controller.verifyLogin, controller.verifyAdminRole, chargingStationsController.removeChargingStation)
+
+router.route('/cars')
+    .get(controller.verifyLogin, carsController.readUserCars)
+    .post(controller.verifyLogin, carsController.addUserCar);
+
+router.route('/cars/:id')
+    .get(controller.verifyLogin, carsController.readCar)
+    .put(controller.verifyLogin, carsController.updateCar)
+    .delete(controller.verifyLogin, carsController.deleteCar);
 
 export default router;
