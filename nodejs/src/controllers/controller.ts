@@ -13,7 +13,10 @@ export const verifyLogin: RequestHandler = (req: Request, res: Response, next: N
             userModel.findOne({ _id: decodedToken._id })
                 .then((user: any) => {
                     console.log("Found user:" + user);
-                    req.body = { "username": user.username, "role": user.role };
+                    req.body = {
+                        ...req.body, 
+                        user: { id: user._id, username: user.username, role: user.role }
+                    };
                     next();
                 })
                 .catch((err: any) => {
@@ -30,8 +33,8 @@ export const verifyLogin: RequestHandler = (req: Request, res: Response, next: N
 };
 
 export const verifyAdminRole: RequestHandler = (req: Request, res: Response, next: NextFunction) => {
-    if (req.body.role !== Role.Admin) {
-        res.status(403).json({ message: "User " + req.body.username + " is not admin" });
+    if (req.body.user.role !== Role.Admin) {
+        res.status(403).json({ message: "User " + req.body.user.username + " is not admin" });
     } else {
         next();
     }
@@ -56,7 +59,7 @@ export const login: RequestHandler = (req: Request, res: Response) => {
 
 export const getHome: RequestHandler = (req: Request, res: Response) => {
     console.log("Get Home request");
-    console.log("Username: " + req.body.username + " Role: " + req.body.role);
+    console.log("Username: " + req.body.user.username + " Role: " + req.body.user.role);
     userModel.find()
         .then((doc: any) => {
             res.json(doc)
@@ -70,7 +73,7 @@ export const postHome: RequestHandler = (req: Request, res: Response) => {};
 
 export const getMap: RequestHandler = (req: Request, res: Response) => {
     console.log("Get Map request");
-    console.log("Username: " + req.body.username + " Role: " + req.body.role);
+    console.log("Username: " + req.body.user.username + " Role: " + req.body.user.role);
     userModel.find()
         .then((doc: any) => {
             res.json(doc)
