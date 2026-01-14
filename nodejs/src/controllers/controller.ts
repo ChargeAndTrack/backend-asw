@@ -1,69 +1,66 @@
-import type { NextFunction, Request, RequestHandler, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 import { userModel, Role } from "../models/user.ts";
 import jwt from "jsonwebtoken";
 import config from "../config/config.ts";
 
 const JWT_SECRET = config.jwtSecret;
 
-export const verifyLogin: RequestHandler = (req: Request, res: Response, next: NextFunction) => {
+export const verifyLogin = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
     if (req.headers.authorization) {
         const token = req.headers.authorization;
         try {
             const decodedToken: any = jwt.verify(token, JWT_SECRET);
-            userModel.findOne({ _id: decodedToken._id })
-                .then((user: any) => {
-                    console.log("Found user:" + user);
-                    req.body = {
-                        ...req.body, 
-                        user: { id: user._id, username: user.username, role: user.role }
-                    };
-                    next();
-                })
-                .catch((err: any) => {
-                    console.log("Error: " + err);
-                    res.status(404).json({ message: "User not found" });
-                });
+            const user = await userModel.findOne({ _id: decodedToken._id });
+            if (!user) {
+                return res.status(404).json({ message: "User not found" });
+            }
+            console.log("Found user:" + user);
+            req.body = {
+                ...req.body, 
+                user: { id: user._id, username: user.username, role: user.role }
+            };
+            return next();
         } catch (err) {
             console.log("Token verification failed: " + err);
-            res.status(401).json({ message: "Invalid token" });
+            return res.status(401).json({ message: "Invalid token" });
         }
-    } else {
-        res.status(400).json({ message: "Authorization required" });
     }
+    return res.status(400).json({ message: "Authorization required" });
 };
 
-export const verifyAdminRole: RequestHandler = (req: Request, res: Response, next: NextFunction) => {
+export const verifyAdminRole = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
     if (req.body.user.role !== Role.Admin) {
-        res.status(403).json({ message: "User " + req.body.user.username + " is not admin" });
-    } else {
-        next();
+        return res.status(403).json({ message: "User " + req.body.user.username + " is not admin" });
     }
+    return next();
 };
 
-export const getHome: RequestHandler = (req: Request, res: Response) => {
+export const getHome = async (req: Request, res: Response): Promise<Response> => {
     console.log("Get Home request");
     console.log("Username: " + req.body.user.username + " Role: " + req.body.user.role);
-    userModel.find()
-        .then((doc: any) => {
-            res.json(doc)
-        })
-        .catch((err: any) => {
-            res.send(err);
-        });
+    try {
+        const user = await userModel.find();
+        return res.json(user);
+    } catch (err) {
+        return res.send(err);
+    }
 };
 
-export const postHome: RequestHandler = (req: Request, res: Response) => {};
+export const postHome = async (req: Request, res: Response): Promise<Response> => {
+    return res.sendStatus(200);
+};
 
-export const getMap: RequestHandler = (req: Request, res: Response) => {
+export const getMap = async (req: Request, res: Response): Promise<Response> => {
     console.log("Get Map request");
     console.log("Username: " + req.body.user.username + " Role: " + req.body.user.role);
-    userModel.find()
-        .then((doc: any) => {
-            res.json(doc)
-        })
-        .catch((err: any) => {
-            res.send(err);
-        });
+    try {
+        const user = await userModel.find();
+        return res.json(user);
+    } catch (err) {
+        return res.send(err);
+    }
 };
 
-export const postMap: RequestHandler = (req: Request, res: Response) => {};
+export const postMap = async (req: Request, res: Response): Promise<Response> => {
+    return res.sendStatus(200);
+};
