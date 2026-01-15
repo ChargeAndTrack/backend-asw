@@ -1,17 +1,16 @@
-import type { Request, RequestHandler, Response } from "express";
+import type { Request, Response } from "express";
 import { userModel } from "../models/user.ts";
 import jwt from "jsonwebtoken";
 import config from "../config/config.ts";
+import { loginSchema, type LoginDTO } from "../zod_schemas/loginSchemas.ts";
 
 const JWT_SECRET = config.jwtSecret;
 
 export const login = async (req: Request, res: Response): Promise<Response> => {
     console.log("Login request: username " + req.body.username + " password " + req.body.password);
     try {
-        const user = await userModel.findOne({
-            "username": req.body.username,
-            "password": req.body.password
-        });
+        const loginBody: LoginDTO = await loginSchema.parseAsync(req.body);
+        const user = await userModel.findOne(loginBody);
         if (!user) {
             return res.status(404).send("Login failed, user with these credentials not found");
         }
