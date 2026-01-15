@@ -2,6 +2,8 @@ import type { Request, Response } from "express";
 import type { Car } from "../models/car.ts";
 import { userModel } from "../models/user.ts";
 
+// TODO only base user ?
+
 // GET /cars
 export const readUserCars = async (req: Request, res: Response): Promise<Response> => {
     console.log("readUserCars");
@@ -96,5 +98,20 @@ export const updateCar = async (req: Request, res: Response): Promise<Response> 
 // DELETE /cars/:id
 export const deleteCar = async (req: Request, res: Response): Promise<Response> => {
     console.log("deleteCar");
-    return res.sendStatus(200);
+    console.log("Car ID: " + req.params["id"]);
+    console.log("UserId: " + req.body.user.id + " Username: " + req.body.user.username + " Role: " + req.body.user.role);
+    try {
+        const user = await userModel.findOneAndUpdate(
+            { _id: req.body.user.id, "cars._id": req.params["id"] },
+            { $pull: { cars: { _id: req.params["id"] } } },
+            { new: true }
+        );
+        if (!user) {
+            return res.status(404).json({ message: "Car not found" });
+        }
+        return res.status(200).json({ message: "Car deleted successfully", cars: user.cars });
+    } catch (err) {
+        console.log("Error:", err);
+        return res.sendStatus(500);
+    }
 };
