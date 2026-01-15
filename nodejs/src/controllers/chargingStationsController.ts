@@ -1,5 +1,8 @@
 import type { Request, Response } from 'express';
 import { chargingStationModel } from '../models/chargingStation.ts';
+import { addChargingStationSchema, updateChargingStationSchema } from '../zod_schemas/chargingStationsSchemas.ts';
+import type { AddChargingStationDTO, UpdateChargingStationDTO } from '../zod_schemas/chargingStationsSchemas.ts';
+import { ZodError } from 'zod';
 
 // GET /chargingStations
 export const listChargingStations = async (req: Request, res: Response): Promise<Response> => {
@@ -16,16 +19,15 @@ export const listChargingStations = async (req: Request, res: Response): Promise
 export const addChargingStation = async (req: Request, res: Response): Promise<Response> => {
     console.log("Add charging station request");
     try {
-        const chargingStation = await chargingStationModel.insertOne({
-            power: req.body.power,
-            available: req.body.available,
-            enabled: req.body.enabled
-        });
-        console.log("Added charging station: " + chargingStation);
-        return res.sendStatus(200);
+        const parsedBody: AddChargingStationDTO = await addChargingStationSchema.parseAsync(req.body);
+        const chargingStation = await chargingStationModel.insertOne(parsedBody);
+        return res.status(201).json(chargingStation);
     } catch (error) {
         console.log("Fail adding a charging station " + error);
-        return res.status(400).send("Fail adding a charging station");
+        if (error instanceof ZodError) {
+            return res.status(400).json({ message: "Invalid request data"});
+        }
+        return res.sendStatus(500);
     }
 };
 
@@ -49,9 +51,10 @@ export const getChargingStation = async (req: Request, res: Response): Promise<R
 export const updateChargingStation = async (req: Request, res: Response): Promise<Response> => {
     console.log("Update charging station with id " + req.params["id"]);
     try {
+        const parsedBody: UpdateChargingStationDTO = await updateChargingStationSchema.parseAsync(req.body);
         const chargingStation = await chargingStationModel.findByIdAndUpdate(
             req.params["id"],
-            req.body,
+            parsedBody,
             { new: true, runValidators: true }
         );
         if (!chargingStation) {
@@ -61,6 +64,9 @@ export const updateChargingStation = async (req: Request, res: Response): Promis
         return res.status(200).json(chargingStation);
     } catch (error) {
         console.log("Fail getting a charging station " + error);
+        if (error instanceof ZodError) {
+            return res.status(400).json({ message: "Invalid request data"});
+        }
         return res.sendStatus(500);
     }
 };
@@ -74,7 +80,7 @@ export const removeChargingStation = async (req: Request, res: Response): Promis
             return res.status(404).send("Charging station not found")
         }
         console.log("Removed charging station: " + chargingStation);
-        return res.sendStatus(200);
+        return res.status(200).send("Charging station successfully removed");
     } catch (error) {
         console.log("Fail removing a charging station " + error);
         return res.sendStatus(500);

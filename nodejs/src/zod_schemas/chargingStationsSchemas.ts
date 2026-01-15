@@ -1,9 +1,7 @@
 import { z } from 'zod';
 
 export const addChargingStationSchema = z.object({
-    power: z.number(),
-    available: z.boolean().optional(),
-    enabled: z.boolean().optional()
+    power: z.number()
 });
 
 export type AddChargingStationDTO = z.infer<typeof addChargingStationSchema>;
