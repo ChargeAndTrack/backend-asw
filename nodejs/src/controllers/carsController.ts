@@ -1,4 +1,4 @@
-import type { Request, RequestHandler, Response } from "express";
+import type { Request, Response } from "express";
 import type { Car } from "../models/car.ts";
 import { userModel } from "../models/user.ts";
 
@@ -32,7 +32,7 @@ export const addUserCar = async (req: Request, res: Response): Promise<Response>
         const user = await userModel.findByIdAndUpdate(
             req.body.user.id,
             { $push: { cars: car } },
-            { new: true }
+            { new: true, runValidators: true }
         );
         if (!user) {
             return res.status(404).json({ message: "User not found" });
@@ -58,7 +58,7 @@ export const readCar = async (req: Request, res: Response): Promise<Response> =>
             return res.status(404).json({ message: "Car not found" });
         }
         console.log("Found car: ", userWithCar.cars?.[0]);
-        return res.json(userWithCar.cars?.[0]);
+        return res.status(200).json(userWithCar.cars?.[0]);
     } catch (err) {
         console.log("Error:", err);
         return res.sendStatus(500);
@@ -68,7 +68,29 @@ export const readCar = async (req: Request, res: Response): Promise<Response> =>
 // PUT /cars/:id
 export const updateCar = async (req: Request, res: Response): Promise<Response> => {
     console.log("updateCar");
-    return res.sendStatus(200);
+    console.log("Car ID: " + req.params["id"]);
+    console.log("UserId: " + req.body.user.id + " Username: " + req.body.user.username + " Role: " + req.body.user.role);
+    try {
+        // TODO check input
+        const set: Record<string, any> = {};
+        for (const [key, value] of Object.entries(req.body)) {
+            if (key === "plate" || key === "maxBattery" || key === "currentBattery") {
+                set[`cars.$.${key}`] = value;
+            }
+        }
+        const userWithCar = await userModel.findOneAndUpdate(
+            { _id: req.body.user.id, "cars._id": req.params["id"] },
+            { $set: set },
+            { new: true, runValidators: true }
+        ).select({ cars: { $elemMatch: { _id: req.params["id"] } } });
+        if (!userWithCar) {
+            return res.status(404).json({ message: "Car not found" });
+        }
+        return res.status(200).json(userWithCar.cars?.[0]);
+    } catch (err) {
+        console.log("Error:", err);
+        return res.sendStatus(500);
+    }
 };
 
 // DELETE /cars/:id
