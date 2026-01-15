@@ -47,8 +47,22 @@ export const getChargingStation = async (req: Request, res: Response): Promise<R
 
 // PUT /chargingStations/:id
 export const updateChargingStation = async (req: Request, res: Response): Promise<Response> => {
-    console.log("Update charging station");
-    return res.sendStatus(200);
+    console.log("Update charging station with id " + req.params["id"]);
+    try {
+        const chargingStation = await chargingStationModel.findByIdAndUpdate(
+            req.params["id"],
+            req.body,
+            { new: true, runValidators: true }
+        );
+        if (!chargingStation) {
+            return res.status(404).send("Charging station not found");
+        }
+        console.log("Updated charging station to " + chargingStation);
+        return res.status(200).json(chargingStation);
+    } catch (error) {
+        console.log("Fail getting a charging station " + error);
+        return res.sendStatus(500);
+    }
 };
 
 // DELETE /chargingStations/:id
