@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
-import type { Car } from "../models/car.ts";
 import { userModel } from "../models/user.ts";
+import { addCarSchema, updateCarSchema, type AddCarDTO, type UpdateCarDTO } from "../zod_schemas/carsSchemas.ts";
+import { ZodError } from "zod";
 
 // GET /cars
 export const readUserCars = async (req: Request, res: Response): Promise<Response> => {
@@ -24,14 +25,10 @@ export const addUserCar = async (req: Request, res: Response): Promise<Response>
     console.log("addUserCar");
     console.log("UserId: " + req.user.id + " Username: " + req.user.username + " Role: " + req.user.role);
     try {
-        // TODO check input
-        const car: Car = {
-            plate: req.body.plate,
-            maxBattery: req.body.maxBattery
-        };
+        const parsedBody: AddCarDTO = await addCarSchema.parseAsync(req.body);
         const user = await userModel.findByIdAndUpdate(
             req.user.id,
-            { $push: { cars: car } },
+            { $push: { cars: parsedBody } },
             { new: true, runValidators: true }
         );
         if (!user) {
@@ -40,6 +37,9 @@ export const addUserCar = async (req: Request, res: Response): Promise<Response>
         return res.status(201).json(user.cars?.at(-1));
     } catch (err) {
         console.log("Error:", err);
+        if (err instanceof ZodError) {
+            return res.status(400).json({ message: "Invalid request data"});
+        }
         return res.sendStatus(500);
     }
 };
@@ -71,16 +71,13 @@ export const updateCar = async (req: Request, res: Response): Promise<Response> 
     console.log("Car ID: " + req.params["id"]);
     console.log("UserId: " + req.user.id + " Username: " + req.user.username + " Role: " + req.user.role);
     try {
-        // TODO check input
-        const set: Record<string, any> = {};
-        for (const [key, value] of Object.entries(req.body)) {
-            if (key === "plate" || key === "maxBattery" || key === "currentBattery") {
-                set[`cars.$.${key}`] = value;
-            }
-        }
+        const parsedBody: UpdateCarDTO = await updateCarSchema.parseAsync(req.body);
+        const updates = Object.fromEntries(
+            Object.entries(parsedBody).map(([key, value]) => [`cars.$.${key}`, value])
+        );
         const userWithCar = await userModel.findOneAndUpdate(
             { _id: req.user.id, "cars._id": req.params["id"] },
-            { $set: set },
+            { $set: updates },
             { new: true, runValidators: true }
         ).select({ cars: { $elemMatch: { _id: req.params["id"] } } });
         if (!userWithCar) {
@@ -89,6 +86,9 @@ export const updateCar = async (req: Request, res: Response): Promise<Response> 
         return res.status(200).json(userWithCar.cars?.[0]);
     } catch (err) {
         console.log("Error:", err);
+        if (err instanceof ZodError) {
+            return res.status(400).json({ message: "Invalid request data"});
+        }
         return res.sendStatus(500);
     }
 };
