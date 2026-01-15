@@ -5,9 +5,9 @@ import { userModel } from "../models/user.ts";
 // GET /cars
 export const readUserCars = async (req: Request, res: Response): Promise<Response> => {
     console.log("readUserCars");
-    console.log("UserId: " + req.body.user.id + " Username: " + req.body.user.username + " Role: " + req.body.user.role);
+    console.log("UserId: " + req.user.id + " Username: " + req.user.username + " Role: " + req.user.role);
     try {
-        const user = await userModel.findById(req.body.user.id).select("cars");
+        const user = await userModel.findById(req.user.id).select("cars");
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
@@ -22,7 +22,7 @@ export const readUserCars = async (req: Request, res: Response): Promise<Respons
 // POST /cars
 export const addUserCar = async (req: Request, res: Response): Promise<Response> => {
     console.log("addUserCar");
-    console.log("UserId: " + req.body.user.id + " Username: " + req.body.user.username + " Role: " + req.body.user.role);
+    console.log("UserId: " + req.user.id + " Username: " + req.user.username + " Role: " + req.user.role);
     try {
         // TODO check input
         const car: Car = {
@@ -30,7 +30,7 @@ export const addUserCar = async (req: Request, res: Response): Promise<Response>
             maxBattery: req.body.maxBattery
         };
         const user = await userModel.findByIdAndUpdate(
-            req.body.user.id,
+            req.user.id,
             { $push: { cars: car } },
             { new: true, runValidators: true }
         );
@@ -48,10 +48,10 @@ export const addUserCar = async (req: Request, res: Response): Promise<Response>
 export const readCar = async (req: Request, res: Response): Promise<Response> => {
     console.log("readCar");
     console.log("Car ID: " + req.params["id"]);
-    console.log("UserId: " + req.body.user.id + " Username: " + req.body.user.username + " Role: " + req.body.user.role);
+    console.log("UserId: " + req.user.id + " Username: " + req.user.username + " Role: " + req.user.role);
     try {
         const userWithCar = await userModel.findOne(
-            { _id: req.body.user.id, "cars._id": req.params["id"] },
+            { _id: req.user.id, "cars._id": req.params["id"] },
             { cars: { $elemMatch: { _id: req.params["id"] } } }
         );
         if (!userWithCar) {
@@ -69,7 +69,7 @@ export const readCar = async (req: Request, res: Response): Promise<Response> =>
 export const updateCar = async (req: Request, res: Response): Promise<Response> => {
     console.log("updateCar");
     console.log("Car ID: " + req.params["id"]);
-    console.log("UserId: " + req.body.user.id + " Username: " + req.body.user.username + " Role: " + req.body.user.role);
+    console.log("UserId: " + req.user.id + " Username: " + req.user.username + " Role: " + req.user.role);
     try {
         // TODO check input
         const set: Record<string, any> = {};
@@ -79,7 +79,7 @@ export const updateCar = async (req: Request, res: Response): Promise<Response> 
             }
         }
         const userWithCar = await userModel.findOneAndUpdate(
-            { _id: req.body.user.id, "cars._id": req.params["id"] },
+            { _id: req.user.id, "cars._id": req.params["id"] },
             { $set: set },
             { new: true, runValidators: true }
         ).select({ cars: { $elemMatch: { _id: req.params["id"] } } });
@@ -97,10 +97,10 @@ export const updateCar = async (req: Request, res: Response): Promise<Response> 
 export const deleteCar = async (req: Request, res: Response): Promise<Response> => {
     console.log("deleteCar");
     console.log("Car ID: " + req.params["id"]);
-    console.log("UserId: " + req.body.user.id + " Username: " + req.body.user.username + " Role: " + req.body.user.role);
+    console.log("UserId: " + req.user.id + " Username: " + req.user.username + " Role: " + req.user.role);
     try {
         const user = await userModel.findOneAndUpdate(
-            { _id: req.body.user.id, "cars._id": req.params["id"] },
+            { _id: req.user.id, "cars._id": req.params["id"] },
             { $pull: { cars: { _id: req.params["id"] } } },
             { new: true }
         );
