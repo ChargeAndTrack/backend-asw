@@ -20,12 +20,7 @@ const userSchema = new mongoose.Schema<User>({
     username: { type: String, required: true },
     password: { type: String, required: true },
     role: { type: String, required: true },
-    cars: { type: [carSchema], default: function () {
-        if (this.role === 'BASE_USER') {
-            return [];
-        }
-        return undefined;
-    }}
+    cars: { type: [carSchema], default: [] }
 });
 
 export const userModel = mongoose.model('User', userSchema);

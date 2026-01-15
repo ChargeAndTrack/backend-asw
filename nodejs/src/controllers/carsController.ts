@@ -2,8 +2,6 @@ import type { Request, Response } from "express";
 import type { Car } from "../models/car.ts";
 import { userModel } from "../models/user.ts";
 
-// TODO only base user ?
-
 // GET /cars
 export const readUserCars = async (req: Request, res: Response): Promise<Response> => {
     console.log("readUserCars");
