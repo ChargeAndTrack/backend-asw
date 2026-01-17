@@ -30,6 +30,12 @@ services:
     networks:
       - interna
 
+  redis:
+    image: redis:alpine
+    restart: always
+    networks:
+      - interna
+
 networks:
   interna:
     driver: bridge
