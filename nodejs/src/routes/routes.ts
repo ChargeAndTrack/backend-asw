@@ -21,6 +21,9 @@ router.route('/charging-stations')
     .get(controller.verifyLogin, chargingStationsController.listChargingStations)
     .post(controller.verifyLogin, controller.verifyAdminRole, chargingStationsController.addChargingStation);
 
+router.get('/charging-stations/near', controller.verifyLogin, chargingStationsController.getNearbyChargingStations);
+router.get('/charging-stations/closest', controller.verifyLogin, chargingStationsController.getClosestChargingStation);
+
 router.route('/charging-stations/:id')
     .get(controller.verifyLogin, chargingStationsController.getChargingStation)
     .put(controller.verifyLogin, controller.verifyAdminRole, chargingStationsController.updateChargingStation)
