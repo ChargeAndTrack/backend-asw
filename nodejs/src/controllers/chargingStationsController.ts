@@ -4,7 +4,7 @@ import { addChargingStationSchema, updateChargingStationSchema } from '../zod_sc
 import type { AddChargingStationDTO, UpdateChargingStationDTO } from '../zod_schemas/chargingStationsSchemas.ts';
 import { ZodError } from 'zod';
 
-// GET /chargingStations
+// GET /charging-stations
 export const listChargingStations = async (req: Request, res: Response): Promise<Response> => {
     console.log("List charging stations request");
     try {
@@ -15,7 +15,7 @@ export const listChargingStations = async (req: Request, res: Response): Promise
     }
 };
 
-// POST /chargingStations
+// POST /charging-stations
 export const addChargingStation = async (req: Request, res: Response): Promise<Response> => {
     console.log("Add charging station request");
     try {
@@ -31,7 +31,7 @@ export const addChargingStation = async (req: Request, res: Response): Promise<R
     }
 };
 
-// GET /chargingStations/:id
+// GET /charging-stations/:id
 export const getChargingStation = async (req: Request, res: Response): Promise<Response> => {
     console.log("Get charging station with id " + req.params["id"]);
     try {
@@ -47,7 +47,7 @@ export const getChargingStation = async (req: Request, res: Response): Promise<R
     }
 };
 
-// PUT /chargingStations/:id
+// PUT /charging-stations/:id
 export const updateChargingStation = async (req: Request, res: Response): Promise<Response> => {
     console.log("Update charging station with id " + req.params["id"]);
     try {
@@ -71,7 +71,7 @@ export const updateChargingStation = async (req: Request, res: Response): Promis
     }
 };
 
-// DELETE /chargingStations/:id
+// DELETE /charging-stations/:id
 export const removeChargingStation = async (req: Request, res: Response): Promise<Response> => {
     try {
         console.log("Remove charging station request: " + req.params["id"]);

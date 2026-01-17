@@ -17,11 +17,11 @@ router.route('/map')
     .get(controller.verifyLogin, controller.verifyAdminRole, controller.getMap)
     .post(controller.postMap);
 
-router.route('/chargingStations')
+router.route('/charging-stations')
     .get(controller.verifyLogin, chargingStationsController.listChargingStations)
     .post(controller.verifyLogin, controller.verifyAdminRole, chargingStationsController.addChargingStation);
 
-router.route('/chargingStations/:id')
+router.route('/charging-stations/:id')
     .get(controller.verifyLogin, chargingStationsController.getChargingStation)
     .put(controller.verifyLogin, controller.verifyAdminRole, chargingStationsController.updateChargingStation)
     .delete(controller.verifyLogin, controller.verifyAdminRole, chargingStationsController.removeChargingStation)
