@@ -23,4 +23,4 @@ const userSchema = new mongoose.Schema<User>({
     cars: { type: [carSchema], default: [] }
 });
 
-export const userModel = mongoose.model('User', userSchema);
+export const userModel = mongoose.model('User', userSchema, 'users');
