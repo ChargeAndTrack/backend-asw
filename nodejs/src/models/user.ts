@@ -6,7 +6,7 @@ export interface User {
     username: string;
     password: string;
     role: Role;
-    cars?: Car[];
+    cars: Car[];
 }
 
 export const Role = {
