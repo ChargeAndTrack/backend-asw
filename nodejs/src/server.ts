@@ -2,9 +2,12 @@ import app from "./app.ts";
 import config from "./config/config.ts";
 import { createServer } from "http";
 import { Server } from "socket.io";
+import { rechargeWorker } from "./controllers/rechargeWorker.ts";
 
 const server = createServer(app);
 export const io = new Server(server);
+
+rechargeWorker();
 
 io.on('connection', (socket) => {
     console.log('a user connected');
