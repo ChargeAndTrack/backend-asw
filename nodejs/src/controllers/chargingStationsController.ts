@@ -94,11 +94,11 @@ export const getNearbyChargingStations = async (req: Request, res: Response): Pr
     console.log("getNearbyChargingStations");
     const EARTH_RADIUS_METERS = 6378137;
     try {
-        const parsedBody: NearChargingStationsDTO = await nearChargingStationsSchema.parseAsync(req.query);
+        const parsedQuery: NearChargingStationsDTO = await nearChargingStationsSchema.parseAsync(req.query);
         const stations = await chargingStationModel.find({
             location: {
                 $geoWithin: {
-                    $centerSphere: [[parsedBody.lng, parsedBody.lat], parsedBody.radius / EARTH_RADIUS_METERS]
+                    $centerSphere: [[parsedQuery.lng, parsedQuery.lat], parsedQuery.radius / EARTH_RADIUS_METERS]
                 }
             }
         });
@@ -116,21 +116,19 @@ export const getNearbyChargingStations = async (req: Request, res: Response): Pr
 export const getClosestChargingStation = async (req: Request, res: Response): Promise<Response> => {
     console.log("getClosestChargingStation");
     try {
-        const parsedBody: ClosestChargingStationDTO = await closestChargingStationSchema.parseAsync(req.query);
+        const parsedQuery: ClosestChargingStationDTO = await closestChargingStationSchema.parseAsync(req.query);
         const stations = await chargingStationModel.aggregate([
             {
                 $geoNear: {
                     key: "location",
-                    near: { type: "Point", coordinates: [parsedBody.lng, parsedBody.lat] },
+                    near: { type: "Point", coordinates: [parsedQuery.lng, parsedQuery.lat] },
                     distanceField: "distance",
                     spherical: true,
-                    query: {
-                        "location.type": "Point",
-                        "location.coordinates": { $size: 2 }
-                    }
+                    query: { "enabled": true, "available": true }
                 },
             },
-            { $limit: 1 }
+            { $limit: 1 },
+            { $project: { enabled: 0, available: 0 } }
         ]);
         if (stations.length === 0) {
             return res.status(404).json({ error: "No charging stations found" });
