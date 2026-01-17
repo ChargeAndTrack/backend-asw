@@ -20,6 +20,7 @@ db.users.insertMany([
    {"username": "user1", "password": "user11234", "role": "BASE_USER"},
    {"username": "user2", "password": "user21234", "role": "BASE_USER"}
 ]);
+db.chargingStations.createIndex({ location: "2dsphere" });
 
 var cursor = db.users.find();
 while ( cursor.hasNext() ) {
