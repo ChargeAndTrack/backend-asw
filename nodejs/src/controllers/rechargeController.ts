@@ -1,13 +1,14 @@
-import { Queue } from 'bullmq';
 import { calculateTimeForOnePercent } from '../models/rechargeLogic.ts';
 import { updateCarLogic, UpdateCarMethod } from '../models/user.ts';
 import type { Request, Response } from 'express';
 import { chargingStationModel } from '../models/chargingStation.ts';
-import config from '../config/config.ts';
-import { startRechargeSchema, type StartRechargeDTO } from '../zod_schemas/rechargeSchemas.ts';
+import { rechargeSchema, type RechargeDTO } from '../zod_schemas/rechargeSchemas.ts';
 import { randomInt } from 'node:crypto';
+import { Queue } from 'bullmq';
+import config from '../config/config.ts';
+import { io } from '../server.ts';
 
-const chargingQueue = new Queue('charging-queue', {
+export const rechargeQueue = new Queue('recharge-queue', {
     connection: {
         host: config.redisHost,
         port: config.redisPort,
@@ -21,14 +22,19 @@ export const startRecharge = async (req: Request, res: Response): Promise<Respon
     if (!chargingStation) {
         return res.status(404).json({ message: "Charging station not found" });
     }
-
-    const parsedBody: StartRechargeDTO = await startRechargeSchema.parseAsync(req.body);
-    const userWithCar = await updateCarLogic(userId, parsedBody.carId, UpdateCarMethod.Set, { "cars.$.currentBattery": randomInt(99) });
+    const parsedBody: RechargeDTO = await rechargeSchema.parseAsync(req.body);
+    io.emit('start-recharge', `car_${parsedBody.carId}`);
+    const userWithCar = await updateCarLogic(
+        userId,
+        parsedBody.carId,
+        UpdateCarMethod.Set,
+        { "cars.$.currentBattery": randomInt(99) }
+    );
     if (!userWithCar) {
         return res.status(404).json({ message: "Car not found" });
     }
     const interval = calculateTimeForOnePercent(chargingStation.power, userWithCar!.cars!.at(0)!.maxBattery);
-    await chargingQueue.add(`charge-${parsedBody.carId}`, { userId: userId, carId: parsedBody.carId }, {
+    await rechargeQueue.add(`recharge_${parsedBody.carId}`, { userId: userId, carId: parsedBody.carId }, {
         repeat: { every: interval },
         jobId: parsedBody.carId
     });

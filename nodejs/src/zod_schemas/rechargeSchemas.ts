@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-export const startRechargeSchema = z.object({
+export const rechargeSchema = z.object({
     carId: z.string()
 });
 
-export type StartRechargeDTO = z.infer<typeof startRechargeSchema>;
+export type RechargeDTO = z.infer<typeof rechargeSchema>;

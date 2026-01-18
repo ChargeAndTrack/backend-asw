@@ -2,26 +2,37 @@ import { Worker, Job } from 'bullmq';
 import { updateCarLogic, UpdateCarMethod } from '../models/user.ts';
 import { io } from '../server.ts';
 import config from '../config/config.ts';
+import { rechargeQueue } from './rechargeController.ts';
 
-export const rechargeWorker = () => {
-    return new Worker('charging-queue', async (job: Job) => {
-        const { userId, carId } = job.data;
-        const userWithCar = await updateCarLogic(userId, carId, UpdateCarMethod.Inc, { "cars.$.currentBattery": 1 });
-        if (!userWithCar) {
-            throw new Error("Car not found");
-        }
-        // io.to(`car_${carId}`).emit('batteryUpdate', { level: car.currentBattery });
-        io.to(`recharge`).emit('batteryUpdate', { level: userWithCar!.cars[0]!.currentBattery });
-        console.log("Battery update to " + userWithCar!.cars[0]!.currentBattery);
-        if (userWithCar!.cars[0]!.currentBattery && userWithCar!.cars[0]!.currentBattery >= 100) {
-            return { status: 'Completed' };
+export const rechargeWorker = () => new Worker('recharge-queue', async (job: Job) => {
+    const { userId, carId } = job.data;
+    const userWithCar = await updateCarLogic(
+        userId,
+        carId,
+        UpdateCarMethod.Inc,
+        { "cars.$.currentBattery": 1 }
+    );
+    if (!userWithCar) {
+        throw new Error("Car not found");
+    }
+    const currentBattery: number | undefined = userWithCar!.cars[0]!.currentBattery;
+    if (currentBattery) {
+        io.to(`car_${carId}`).emit('rechargeUpdate', { level: currentBattery });
+        console.log("Battery update to " + currentBattery);
+        if (currentBattery >= 100) {
+            job.repeatJobKey ?
+                await rechargeQueue.removeJobScheduler(job.repeatJobKey) :
+                await rechargeQueue.removeJobScheduler(carId);
+            return { status: 'Recharge complete' };
         }
         return { status: 'In charge' };
-    }, {
-        connection: {
-            host: config.redisHost,
-            port: config.redisPort,
-            maxRetriesPerRequest: null
-        }
-    });
-};
+    } else {
+        throw new Error("Car has no currentBattery value");
+    }
+}, {
+    connection: {
+        host: config.redisHost,
+        port: config.redisPort,
+        maxRetriesPerRequest: null
+    }
+});
