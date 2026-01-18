@@ -3,6 +3,7 @@ import * as controller from "../controllers/controller.ts";
 import * as loginController from "../controllers/loginController.ts";
 import * as chargingStationsController from "../controllers/chargingStationsController.ts";
 import * as carsController from "../controllers/carsController.ts";
+import * as locationController from "../controllers/locationController.ts";
 
 const router = Router();
 
@@ -21,6 +22,7 @@ router.route('/charging-stations')
     .get(controller.verifyLogin, chargingStationsController.listChargingStations)
     .post(controller.verifyLogin, controller.verifyAdminRole, chargingStationsController.addChargingStation);
 
+router.get('/location/resolve', controller.verifyLogin, locationController.resolveAddressToCoordinates);
 router.get('/charging-stations/near', controller.verifyLogin, chargingStationsController.getNearbyChargingStations);
 router.get('/charging-stations/closest', controller.verifyLogin, chargingStationsController.getClosestChargingStation);
 
