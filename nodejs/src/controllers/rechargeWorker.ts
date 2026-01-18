@@ -3,9 +3,10 @@ import { updateCarLogic, UpdateCarMethod } from '../models/user.ts';
 import { io } from '../server.ts';
 import config from '../config/config.ts';
 import { rechargeQueue } from './rechargeController.ts';
+import { chargingStationModel } from '../models/chargingStation.ts';
 
 export const rechargeWorker = () => new Worker('recharge-queue', async (job: Job) => {
-    const { userId, carId } = job.data;
+    const { userId, carId, chargingStationId } = job.data;
     const userWithCar = await updateCarLogic(
         userId,
         carId,
@@ -20,6 +21,14 @@ export const rechargeWorker = () => new Worker('recharge-queue', async (job: Job
         io.to(`car_${carId}`).emit('rechargeUpdate', { level: currentBattery });
         console.log("Battery update to " + currentBattery);
         if (currentBattery >= 100) {
+            const chargingStation = await chargingStationModel.findByIdAndUpdate(
+                chargingStationId,
+                { $set: { "available": true } },
+                { new: true, runValidators: true }
+            );
+            if (!chargingStation) {
+                throw new Error("Charging station not found");
+            }
             job.repeatJobKey ?
                 await rechargeQueue.removeJobScheduler(job.repeatJobKey) :
                 await rechargeQueue.removeJobScheduler(carId);

@@ -12,12 +12,17 @@ io.on('connection', (socket) => {
     socket.on('start-recharge', (room: string) => {
         socket.join(room)
         console.log("Join the room : " + room);
-    })
+    });
 
     socket.on('rechargeUpdate', (...args) => {
         console.log("rechargeUpdate: " + args)
         io.emit('rechargeUpdate', args);
     });
+
+    socket.on('stop-recharge', (room: string) => {
+        socket.leave(room)
+        console.log("Left the room : " + room);
+    })
 
     socket.on('disconnect', () => {
         console.log('user disconnected');

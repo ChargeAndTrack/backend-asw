@@ -28,6 +28,9 @@ router.route('/charging-stations/:id')
 router.route('/charging-stations/:id/start-recharge')
     .post(verifyLogin, rechargingController.startRecharge);
 
+router.route('/charging-stations/:id/stop-recharge')
+    .post(controller.verifyLogin, rechargingController.stopRecharge);
+
 router.route('/cars')
     .get(verifyLogin, carsController.readUserCars)
     .post(verifyLogin, carsController.addUserCar);

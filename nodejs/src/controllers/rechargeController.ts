@@ -38,9 +38,28 @@ export const startRecharge = async (req: Request, res: Response): Promise<Respon
     }
     await chargingStationModel.findByIdAndUpdate(req.params["id"], { $set: { "available": false } });
     const interval = calculateTimeForOnePercent(chargingStation.power, userWithCar!.cars!.at(0)!.maxBattery);
-    await rechargeQueue.add(`recharge_${parsedBody.carId}`, { userId: userId, carId: parsedBody.carId }, {
-        repeat: { every: interval },
-        jobId: parsedBody.carId
-    });
-    res.status(200).json({ message: "Charging started", intervalMs: interval });
+    await rechargeQueue.add(
+        `recharge_${parsedBody.carId}`,
+        { userId: userId, carId: parsedBody.carId, chargingStationId: req.params["id"] },
+        { repeat: { every: interval }, jobId: parsedBody.carId }
+    );
+    res.status(200).json({ message: "Start recharge", intervalMs: interval });
+};
+
+export const stopRecharge = async (req: Request, res: Response): Promise<Response | void> => {
+    const parsedBody: RechargeDTO = await rechargeSchema.parseAsync(req.body);
+    const schedulers = await rechargeQueue.getJobSchedulers();
+    if (schedulers) {
+        const chargingStation = await chargingStationModel.findByIdAndUpdate(
+            req.params["id"],
+            { $set: { "available": true } },
+            { new: true, runValidators: true }
+        );
+        if (!chargingStation) {
+            return res.status(404).json({ message: "Charging station not found" });
+        }
+        rechargeQueue.removeJobScheduler(schedulers.at(0)?.key!)
+        io.emit('stop-recharge', `car_${parsedBody.carId}`);
+        res.status(200).json({ message: "Stop recharge" });
+    }
 };
