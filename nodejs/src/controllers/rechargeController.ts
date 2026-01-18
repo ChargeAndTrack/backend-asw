@@ -1,6 +1,6 @@
 import { Queue } from 'bullmq';
 import { calculateTimeForOnePercent } from '../models/rechargeLogic.ts';
-import { userModel, type User } from '../models/user.ts';
+import { updateCarLogic, UpdateCarMethod } from '../models/user.ts';
 import type { Request, Response } from 'express';
 import { chargingStationModel } from '../models/chargingStation.ts';
 import config from '../config/config.ts';
@@ -23,11 +23,7 @@ export const startRecharge = async (req: Request, res: Response): Promise<Respon
     }
 
     const parsedBody: StartRechargeDTO = await startRechargeSchema.parseAsync(req.body);
-    const userWithCar = await userModel.findOneAndUpdate(
-        { _id: userId, "cars._id": parsedBody.carId },
-        { $set: { "cars.$.currentBattery": randomInt(99)}},
-        { new: true, runValidators: true }
-    ).select({ cars: { $elemMatch: { _id: parsedBody.carId } } }).lean<User>();
+    const userWithCar = await updateCarLogic(userId, parsedBody.carId, UpdateCarMethod.Set, { "cars.$.currentBattery": randomInt(99) });
     if (!userWithCar) {
         return res.status(404).json({ message: "Car not found" });
     }

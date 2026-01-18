@@ -24,3 +24,22 @@ const userSchema = new mongoose.Schema<User>({
 });
 
 export const userModel = mongoose.model('User', userSchema, 'users');
+
+export const UpdateCarMethod = {
+    "Set": '$set',
+    "Inc": '$inc'
+} as const;
+
+export type UpdateCarMethod = (typeof UpdateCarMethod)[keyof typeof UpdateCarMethod]
+
+export const updateCarLogic = async (
+    userId: mongoose.Types.ObjectId,
+    carId: string | undefined,
+    method: UpdateCarMethod,
+    updates: any
+): Promise<User | null> => await userModel.findOneAndUpdate(
+        { _id: userId, "cars._id": carId },
+        { [method]: updates },
+        { new: true, runValidators: true }
+    ).select({ cars: { $elemMatch: { _id: carId } } })
+    .lean<User>();

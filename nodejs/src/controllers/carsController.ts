@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { userModel } from "../models/user.ts";
+import { updateCarLogic, UpdateCarMethod, userModel } from "../models/user.ts";
 import { addCarSchema, updateCarSchema, type AddCarDTO, type UpdateCarDTO } from "../zod_schemas/carsSchemas.ts";
 import { ZodError } from "zod";
 
@@ -75,11 +75,7 @@ export const updateCar = async (req: Request, res: Response): Promise<Response> 
         const updates = Object.fromEntries(
             Object.entries(parsedBody).map(([key, value]) => [`cars.$.${key}`, value])
         );
-        const userWithCar = await userModel.findOneAndUpdate(
-            { _id: req.user.id, "cars._id": req.params["id"] },
-            { $set: updates },
-            { new: true, runValidators: true }
-        ).select({ cars: { $elemMatch: { _id: req.params["id"] } } });
+        const userWithCar = await updateCarLogic(req.user.id, req.params["id"], UpdateCarMethod.Set, updates);
         if (!userWithCar) {
             return res.status(404).json({ message: "Car not found" });
         }
