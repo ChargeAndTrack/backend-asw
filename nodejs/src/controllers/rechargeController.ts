@@ -22,6 +22,9 @@ export const startRecharge = async (req: Request, res: Response): Promise<Respon
     if (!chargingStation) {
         return res.status(404).json({ message: "Charging station not found" });
     }
+    if (!chargingStation.available) {
+        return res.status(400).json({ message: "Charging station not available" });
+    }
     const parsedBody: RechargeDTO = await rechargeSchema.parseAsync(req.body);
     io.emit('start-recharge', `car_${parsedBody.carId}`);
     const userWithCar = await updateCarLogic(
@@ -33,6 +36,7 @@ export const startRecharge = async (req: Request, res: Response): Promise<Respon
     if (!userWithCar) {
         return res.status(404).json({ message: "Car not found" });
     }
+    await chargingStationModel.findByIdAndUpdate(req.params["id"], { $set: { "available": false } });
     const interval = calculateTimeForOnePercent(chargingStation.power, userWithCar!.cars!.at(0)!.maxBattery);
     await rechargeQueue.add(`recharge_${parsedBody.carId}`, { userId: userId, carId: parsedBody.carId }, {
         repeat: { every: interval },
