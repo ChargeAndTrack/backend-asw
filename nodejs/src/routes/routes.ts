@@ -14,10 +14,6 @@ router.route('/home')
     .get(controller.verifyLogin, controller.getHome)
     .post(controller.postHome);
 
-router.route('/map')
-    .get(controller.verifyLogin, controller.verifyAdminRole, controller.getMap)
-    .post(controller.postMap);
-
 router.route('/charging-stations')
     .get(controller.verifyLogin, chargingStationsController.listChargingStations)
     .post(controller.verifyLogin, controller.verifyAdminRole, chargingStationsController.addChargingStation);

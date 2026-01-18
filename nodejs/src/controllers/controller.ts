@@ -60,17 +60,3 @@ export const postHome = async (req: Request, res: Response): Promise<Response> =
     return res.sendStatus(200);
 };
 
-export const getMap = async (req: Request, res: Response): Promise<Response> => {
-    console.log("Get Map request");
-    console.log("Username: " + req.user.username + " Role: " + req.user.role);
-    try {
-        const user = await userModel.find();
-        return res.json(user);
-    } catch (err) {
-        return res.send(err);
-    }
-};
-
-export const postMap = async (req: Request, res: Response): Promise<Response> => {
-    return res.sendStatus(200);
-};
