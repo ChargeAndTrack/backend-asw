@@ -23,6 +23,7 @@ router.route('/charging-stations')
     .post(controller.verifyLogin, controller.verifyAdminRole, chargingStationsController.addChargingStation);
 
 router.get('/location/resolve', controller.verifyLogin, locationController.resolveAddressToCoordinates);
+router.get('/location/reverse', controller.verifyLogin, locationController.reverseCoordinatesToAddress);
 router.get('/charging-stations/near', controller.verifyLogin, chargingStationsController.getNearbyChargingStations);
 router.get('/charging-stations/closest', controller.verifyLogin, chargingStationsController.getClosestChargingStation);
 

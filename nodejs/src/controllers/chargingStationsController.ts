@@ -3,8 +3,8 @@ import { chargingStationModel } from '../models/chargingStation.ts';
 import { addChargingStationSchema, updateChargingStationSchema } from '../zod_schemas/chargingStationsSchemas.ts';
 import type { AddChargingStationDTO, UpdateChargingStationDTO } from '../zod_schemas/chargingStationsSchemas.ts';
 import { ZodError } from 'zod';
-import { closestChargingStationSchema, nearChargingStationsSchema } from '../zod_schemas/locationSchemas.ts';
-import type { ClosestChargingStationDTO, NearChargingStationsDTO } from '../zod_schemas/locationSchemas.ts';
+import { latitudeLongitudeSchema, nearChargingStationsSchema } from '../zod_schemas/locationSchemas.ts';
+import type { LatitudeLongitudeDTO, NearChargingStationsDTO } from '../zod_schemas/locationSchemas.ts';
 
 // GET /charging-stations
 export const listChargingStations = async (req: Request, res: Response): Promise<Response> => {
@@ -116,7 +116,7 @@ export const getNearbyChargingStations = async (req: Request, res: Response): Pr
 export const getClosestChargingStation = async (req: Request, res: Response): Promise<Response> => {
     console.log("getClosestChargingStation");
     try {
-        const parsedQuery: ClosestChargingStationDTO = await closestChargingStationSchema.parseAsync(req.query);
+        const parsedQuery: LatitudeLongitudeDTO = await latitudeLongitudeSchema.parseAsync(req.query);
         const stations = await chargingStationModel.aggregate([
             {
                 $geoNear: {

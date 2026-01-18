@@ -16,9 +16,9 @@ export const nearChargingStationsSchema = z.object({
 
 export type NearChargingStationsDTO = z.infer<typeof nearChargingStationsSchema>;
 
-export const closestChargingStationSchema = z.object({
-    lng: longitudeSchema,
-    lat: latitudeSchema
+export const latitudeLongitudeSchema = z.object({
+    lat: latitudeSchema,
+    lng: longitudeSchema
 });
 
-export type ClosestChargingStationDTO = z.infer<typeof closestChargingStationSchema>;
+export type LatitudeLongitudeDTO = z.infer<typeof latitudeLongitudeSchema>;
