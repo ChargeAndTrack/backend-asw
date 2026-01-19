@@ -5,14 +5,18 @@ info:
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
-  version: 0.1.0
+  version: 1.0.0
 servers:
   - url: https://localhost:3000/api/v1
 tags:
   - name: account
     description: User account
-  - name: app
-    description: Application when logged in
+  - name: charging-station
+    description: Charging station
+  - name: car
+    description: Car
+  - name: location
+    description: Location
 
 paths:
   /login:
@@ -21,19 +25,18 @@ paths:
         - account
       description: User login
       operationId: login
-      parameters:
-        - name: username
-          in: query
-          description: username
-          required: true
-          schema:
-            type: string
-        - name: password
-          in: query
-          description: user password
-          required: true
-          schema:
-            type: string
+      requestBody:
+        description: user credentials
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
       responses:
         '200':
           description: user successfully logged in
@@ -46,30 +49,521 @@ paths:
                     description: link to home page resource
                     type: string
 
-  /home:
+  /user:
     get:
-      tags: 
-        - app
+      tags:
+        - account
+      description: Get user information
+      operationId: getUser
       responses:
         '200':
-          description: OK
-    post:
-      tags: 
-        - app
-      responses:
-        '200':
-          description: OK
+          description: user information retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: user not found
 
-  /map:
+  /cars:
     get:
-      tags: 
-        - app
+      tags:
+        - car
+      description: Get all cars of the user
+      operationId: getUserCars
       responses:
         '200':
-          description: OK
+          description: list of cars of the user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Car'
+        '404':
+          description: user not found
     post:
-      tags: 
-        - app
+      tags:
+        - car
+      description: Add a new car to the user
+      operationId: addUserCar
+      requestBody:
+        description: car data
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                plate:
+                  type: string
+                maxBattery:
+                  type: number
+      responses:
+        '201':
+          description: car added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Car'
+        '404':
+          description: user not found
+
+  /cars/{id}:
+    get:
+      tags:
+        - car
+      description: Get car by id
+      operationId: readCar
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
       responses:
         '200':
-          description: OK
+          description: car retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Car'
+        '404':
+          description: car not found
+    put:
+      tags:
+        - car
+      description: Update car
+      operationId: updateCar
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: car data
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                plate:
+                  type: string
+                maxBattery:
+                  type: number
+                currentBattery:
+                  type: number
+      responses:
+        '200':
+          description: car updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Car'
+        '404':
+          description: car not found
+    delete:
+      tags:
+        - car
+      description: Delete car
+      operationId: deleteCar
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: car deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cars:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Car'
+        '404':
+          description: car not found
+
+  /charging-stations:
+    get:
+      tags:
+        - charging-station
+      description: Get all charging stations
+      operationId: listChargingStations
+      responses:
+        '200':
+          description: list of all charging stations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChargingStation'
+    post:
+      tags:
+        - charging-station
+      description: Add a new charging station
+      operationId: addChargingStation
+      requestBody:
+        description: charging station data
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                power:
+                  type: number
+                location:
+                  $ref: '#/components/schemas/Location'
+      responses:
+        '201':
+          description: charging station added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargingStation'
+        '403':
+          description: user is not admin
+
+  /charging-stations/near:
+    get:
+      tags:
+        - charging-station
+      description: Get charging stations near a location
+      operationId: getNearbyChargingStations
+      parameters:
+        - name: latitude
+          in: query
+          required: true
+          schema:
+            type: number
+            format: float
+        - name: longitude
+          in: query
+          required: true
+          schema:
+            type: number
+            format: float
+        - name: radius
+          in: query
+          required: true
+          schema:
+            type: number
+      responses:
+        '200':
+          description: list of nearby charging stations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChargingStation'
+
+  /charging-stations/closest:
+    get:
+      tags:
+        - charging-station
+      description: Get the closest charging station to a location
+      operationId: getClosestChargingStation
+      parameters:
+        - name: latitude
+          in: query
+          required: true
+          schema:
+            type: number
+            format: float
+        - name: longitude
+          in: query
+          required: true
+          schema:
+            type: number
+            format: float
+      responses:
+        '200':
+          description: closest charging station
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargingStation'
+        '404':
+          description: no charging stations found
+
+  /charging-stations/{id}:
+    get:
+      tags:
+        - charging-station
+      description: Get charging station by id
+      operationId: getChargingStation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: charging station retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargingStation'
+        '404':
+          description: charging station not found
+    put:
+      tags:
+        - charging-station
+      description: Update charging station
+      operationId: updateChargingStation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: charging station data
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                power:
+                  type: number
+                available:
+                  type: boolean
+                enabled:
+                  type: boolean
+                location:
+                  $ref: '#/components/schemas/Location'
+      responses:
+        '200':
+          description: charging station updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargingStation'
+        '403':
+          description: user is not admin
+        '404':
+          description: charging station not found
+    delete:
+      tags:
+        - charging-station
+      description: Remove charging station
+      operationId: removeChargingStation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: charging station removed successfully
+        '403':
+          description: user is not admin
+        '404':
+          description: charging station not found
+
+  /charging-stations/{id}/start-recharge:
+    post:
+      tags:
+        - charging-station
+      description: Start recharging a car at a charging station
+      operationId: startRecharge
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: car data
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                carId:
+                  type: string
+      responses:
+        '200':
+          description: recharge started successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  intervalMs:
+                    type: number
+        '400':
+          description: charging station not available
+        '404':
+          description: charging station or car not found
+  
+  /charging-stations/{id}/stop-recharge:
+    post:
+      tags:
+        - charging-station
+      description: Stop recharging a car at a charging station
+      operationId: stopRecharge
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: car data
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                carId:
+                  type: string
+      responses:
+        '200':
+          description: recharge stopped successfully
+        '404':
+          description: charging station not found
+
+  /location/resolve:
+    get:
+      tags:
+        - location
+      description: Get coordinates from address
+      operationId: resolveAddressToCoordinates
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: coordinates retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  latitude:
+                    type: number
+                    format: float
+                  longitude:
+                    type: number
+                    format: float
+        '404':
+          description: address not found
+
+  /location/reverse:
+    get:
+      tags:
+        - location
+      description: Get address from coordinates
+      operationId: reverseCoordinatesToAddress
+      parameters:
+        - name: latitude
+          in: query
+          required: true
+          schema:
+            type: number
+            format: float
+        - name: longitude
+          in: query
+          required: true
+          schema:
+            type: number
+            format: float
+      responses:
+        '200':
+          description: address retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+        '404':
+          description: no location information found
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        _id:
+          type: string
+        username:
+          type: string
+        password:
+          type: string
+        role:
+          type: string
+        cars:
+          type: array
+          items:
+            $ref: '#/components/schemas/Car'
+    Car:
+      type: object
+      properties:
+        _id:
+          type: string
+        plate:
+          type: string
+        maxBattery:
+          type: number
+        currentBattery:
+          type: number
+    ChargingStation:
+      type: object
+      properties:
+        _id:
+          type: string
+        power:
+          type: number
+        available:
+          type: boolean
+        enabled:
+          type: boolean
+        location:
+          $ref: '#/components/schemas/Location'
+    Location:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - Point
+        coordinates:
+          type: array
+          items:
+            type: number
+            format: float
+            description: "[longitude, latitude]"
+          minItems: 2
+          maxItems: 2
+    Address:
+      type: object
+      properties:
+        street:
+          type: string
+        houseNumber:
+          type: string
+        city:
+          type: string
+        postalCode:
+          type: string
+        region:
+          type: string
+        country:
+          type: string
