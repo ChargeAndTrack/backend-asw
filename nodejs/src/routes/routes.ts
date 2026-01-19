@@ -25,11 +25,8 @@ router.route('/charging-stations/:id')
     .put(verifyLogin, verifyAdminRole, chargingStationsController.updateChargingStation)
     .delete(verifyLogin, verifyAdminRole, chargingStationsController.removeChargingStation)
 
-router.route('/charging-stations/:id/start-recharge')
-    .post(verifyLogin, rechargingController.startRecharge);
-
-router.route('/charging-stations/:id/stop-recharge')
-    .post(controller.verifyLogin, rechargingController.stopRecharge);
+router.route('/charging-stations/:id/start-recharge').post(verifyLogin, rechargingController.startRecharge);
+router.route('/charging-stations/:id/stop-recharge').post(verifyLogin, rechargingController.stopRecharge);
 
 router.route('/cars')
     .get(verifyLogin, carsController.readUserCars)
