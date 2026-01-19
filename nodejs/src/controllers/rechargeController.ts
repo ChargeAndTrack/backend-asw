@@ -16,6 +16,7 @@ export const rechargeQueue = new Queue('recharge-queue', {
     }
 });
 
+// POST /charging-stations/:id/start-recharge
 export const startRecharge = async (req: Request, res: Response): Promise<Response | void> => {
     const userId = req.user.id;
     const chargingStation = await chargingStationModel.findById(req.params["id"]);
@@ -46,6 +47,7 @@ export const startRecharge = async (req: Request, res: Response): Promise<Respon
     res.status(200).json({ message: "Start recharge", intervalMs: interval });
 };
 
+// POST /charging-stations/:id/stop-recharge
 export const stopRecharge = async (req: Request, res: Response): Promise<Response | void> => {
     const parsedBody: RechargeDTO = await rechargeSchema.parseAsync(req.body);
     const schedulers = await rechargeQueue.getJobSchedulers();
@@ -58,7 +60,7 @@ export const stopRecharge = async (req: Request, res: Response): Promise<Respons
         if (!chargingStation) {
             return res.status(404).json({ message: "Charging station not found" });
         }
-        rechargeQueue.removeJobScheduler(schedulers.at(0)?.key!)
+        rechargeQueue.removeJobScheduler(schedulers.find(s => s.name === `recharge_${parsedBody.carId}`)?.key!)
         io.emit('stop-recharge', `car_${parsedBody.carId}`);
         res.status(200).json({ message: "Stop recharge" });
     }
