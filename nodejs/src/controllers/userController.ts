@@ -45,18 +45,15 @@ export const verifyAdminRole = async (req: Request, res: Response, next: NextFun
     return next();
 };
 
-export const getHome = async (req: Request, res: Response): Promise<Response> => {
-    console.log("Get Home request");
-    console.log("Username: " + req.user.username + " Role: " + req.user.role);
+export const getUser = async (req: Request, res: Response): Promise<Response> => {
+    console.log("getUser");
     try {
-        const user = await userModel.find();
-        return res.json(user);
+        const user = await userModel.findById(req.user.id);
+        if (!user) {
+            return res.status(404).send("User not found");
+        }
+        return res.status(200).json(user);
     } catch (err) {
-        return res.send(err);
+        return res.sendStatus(500);
     }
 };
-
-export const postHome = async (req: Request, res: Response): Promise<Response> => {
-    return res.sendStatus(200);
-};
-
