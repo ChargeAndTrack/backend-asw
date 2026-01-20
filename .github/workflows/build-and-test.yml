@@ -1,0 +1,43 @@
+name: Build
+
+on:
+  workflow_call:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Docker
+        uses: docker/setup-docker-action@v4
+      - name: Docker compose build
+        run: docker compose build
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Run setup script
+        run: sudo chmod 777 ./setup_env.sh; ./setup_env.sh
+      - name: Set up Docker
+        uses: docker/setup-docker-action@v4
+      - name: Docker compose build
+        run: docker compose -f docker-compose.test.yml build
+      - name: Docker compose up
+        run: docker compose -f docker-compose.test.yml up --abort-on-container-exit --exit-code-from nodejsapp-test
+
+  success:
+    needs:
+      - build
+      - test
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify there are no failures
+        run: ${{ !contains(join(needs.*.result, ','), 'failure') }}
