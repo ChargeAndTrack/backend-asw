@@ -45,8 +45,8 @@ paths:
               schema:
                 type: object
                 properties:
-                  homeLink:
-                    description: link to home page resource
+                  token:
+                    description: authorization token
                     type: string
 
   /user:
