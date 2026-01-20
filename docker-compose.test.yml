@@ -9,7 +9,7 @@ services:
         condition: service_healthy
     env_file:
       - ./nodejs/.env
-    command: node --test
+    command: node --test test/run.test.ts
     ports:
       - 3000:3000
     networks:
