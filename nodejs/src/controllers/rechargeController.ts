@@ -6,7 +6,7 @@ import { rechargeSchema, type RechargeDTO } from '../zod_schemas/rechargeSchemas
 import { randomInt } from 'node:crypto';
 import { Queue } from 'bullmq';
 import config from '../config/config.ts';
-import { io } from '../server.ts';
+import { io } from '../socket.ts';
 
 export const rechargeQueue = new Queue('recharge-queue', {
     connection: {
