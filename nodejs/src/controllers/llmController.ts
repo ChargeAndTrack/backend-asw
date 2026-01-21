@@ -72,14 +72,16 @@ async function makeRequest(res: Response, data: LlmResponseSchema): Promise<Resp
     console.log("Location: lat " + location.lat + " lng " + location.lng);
     switch (data.intent) {
         case "NEAR":
-            const stations = await getNearbyCS({ lat: location.lat, lng: location.lng, radius: DEFAULT_RADIUS });
+            const stations = await getNearbyCS(
+                { lat: location.lat, lng: location.lng, radius: DEFAULT_RADIUS },
+                data.filters
+            );
             return res.status(200).json(stations);
         case "CLOSEST":
-            const chargingStations = await getClosestCS(location);
+            const chargingStations = await getClosestCS(location, data.filters);
             if (chargingStations.length === 0) {
                 return res.status(404).json({ error: "No charging stations found" });
             }
             return res.status(200).json(chargingStations[0]);
     }
-    // TODO ADD FILTERS
 }

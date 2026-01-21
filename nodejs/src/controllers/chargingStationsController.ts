@@ -5,6 +5,7 @@ import type { AddChargingStationDTO, UpdateChargingStationDTO } from '../zod_sch
 import { ZodError } from 'zod';
 import { latitudeLongitudeSchema, nearChargingStationsSchema } from '../zod_schemas/locationSchemas.ts';
 import type { LatitudeLongitudeDTO, NearChargingStationsDTO } from '../zod_schemas/locationSchemas.ts';
+import type { FiltersSchema } from '../zod_schemas/llmSchemas.ts';
 
 // GET /charging-stations
 export const listChargingStations = async (req: Request, res: Response): Promise<Response> => {
@@ -104,15 +105,17 @@ export const getNearbyChargingStations = async (req: Request, res: Response): Pr
     }
 };
 
-export async function getNearbyCS(data: NearChargingStationsDTO): Promise<ChargingStation[]> {
+export async function getNearbyCS(data: NearChargingStationsDTO, filters: FiltersSchema = {}): Promise<ChargingStation[]> {
     const EARTH_RADIUS_METERS = 6378137;
     return await chargingStationModel.find({
         location: {
             $geoWithin: {
                 $centerSphere: [[data.lng, data.lat], data.radius / EARTH_RADIUS_METERS]
             }
-        }
-    });
+        },
+        enabled: true,
+        ...(filters.minPowerKw ? { power: { $gte: filters.minPowerKw } } : {}),
+    }).select("-enabled");
 }
 
 // GET /charging-stations/closest
@@ -134,7 +137,7 @@ export const getClosestChargingStation = async (req: Request, res: Response): Pr
     }
 };
 
-export async function getClosestCS(data: LatitudeLongitudeDTO) {
+export async function getClosestCS(data: LatitudeLongitudeDTO, filters: FiltersSchema = {}) {
     return await chargingStationModel.aggregate([
         {
             $geoNear: {
@@ -142,7 +145,11 @@ export async function getClosestCS(data: LatitudeLongitudeDTO) {
                 near: { type: "Point", coordinates: [data.lng, data.lat] },
                 distanceField: "distance",
                 spherical: true,
-                query: { "enabled": true, "available": true }
+                query: {
+                    "enabled": true,
+                    "available": true,
+                    ...(filters.minPowerKw ? { power: { $gte: filters.minPowerKw } } : {}),
+                }
             },
         },
         { $limit: 1 },
