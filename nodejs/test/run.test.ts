@@ -6,6 +6,7 @@ import { io } from "../src/socket.ts";
 import { server } from "../src/server.ts";
 import './login.test.ts';
 import './user.test.ts';
+import './chargingStations.test.ts';
 
 after(async () => {
     await worker.close();
