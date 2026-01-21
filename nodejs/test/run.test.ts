@@ -7,6 +7,7 @@ import { server } from "../src/server.ts";
 import './login.test.ts';
 import './user.test.ts';
 import './chargingStations.test.ts';
+import './cars.test.ts';
 
 after(async () => {
     await worker.close();
