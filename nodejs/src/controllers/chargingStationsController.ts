@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import { chargingStationModel } from '../models/chargingStation.ts';
+import { chargingStationModel, type ChargingStation } from '../models/chargingStation.ts';
 import { addChargingStationSchema, updateChargingStationSchema } from '../zod_schemas/chargingStationsSchemas.ts';
 import type { AddChargingStationDTO, UpdateChargingStationDTO } from '../zod_schemas/chargingStationsSchemas.ts';
 import { ZodError } from 'zod';
@@ -92,17 +92,9 @@ export const removeChargingStation = async (req: Request, res: Response): Promis
 // GET /charging-stations/near
 export const getNearbyChargingStations = async (req: Request, res: Response): Promise<Response> => {
     console.log("getNearbyChargingStations");
-    const EARTH_RADIUS_METERS = 6378137;
     try {
         const parsedQuery: NearChargingStationsDTO = await nearChargingStationsSchema.parseAsync(req.query);
-        const stations = await chargingStationModel.find({
-            location: {
-                $geoWithin: {
-                    $centerSphere: [[parsedQuery.lng, parsedQuery.lat], parsedQuery.radius / EARTH_RADIUS_METERS]
-                }
-            }
-        });
-        return res.status(200).json(stations);
+        return res.status(200).json(getNearbyCS(parsedQuery));
     } catch (error) {
         console.log("Error: " + error);
         if (error instanceof ZodError) {
@@ -112,24 +104,23 @@ export const getNearbyChargingStations = async (req: Request, res: Response): Pr
     }
 };
 
+export async function getNearbyCS(data: NearChargingStationsDTO): Promise<ChargingStation[]> {
+    const EARTH_RADIUS_METERS = 6378137;
+    return await chargingStationModel.find({
+        location: {
+            $geoWithin: {
+                $centerSphere: [[data.lng, data.lat], data.radius / EARTH_RADIUS_METERS]
+            }
+        }
+    });
+}
+
 // GET /charging-stations/closest
 export const getClosestChargingStation = async (req: Request, res: Response): Promise<Response> => {
     console.log("getClosestChargingStation");
     try {
         const parsedQuery: LatitudeLongitudeDTO = await latitudeLongitudeSchema.parseAsync(req.query);
-        const stations = await chargingStationModel.aggregate([
-            {
-                $geoNear: {
-                    key: "location",
-                    near: { type: "Point", coordinates: [parsedQuery.lng, parsedQuery.lat] },
-                    distanceField: "distance",
-                    spherical: true,
-                    query: { "enabled": true, "available": true }
-                },
-            },
-            { $limit: 1 },
-            { $project: { enabled: 0, available: 0 } }
-        ]);
+        const stations = await getClosestCS(parsedQuery);
         if (stations.length === 0) {
             return res.status(404).json({ error: "No charging stations found" });
         }
@@ -142,3 +133,19 @@ export const getClosestChargingStation = async (req: Request, res: Response): Pr
         return res.sendStatus(500);
     }
 };
+
+export async function getClosestCS(data: LatitudeLongitudeDTO) {
+    return await chargingStationModel.aggregate([
+        {
+            $geoNear: {
+                key: "location",
+                near: { type: "Point", coordinates: [data.lng, data.lat] },
+                distanceField: "distance",
+                spherical: true,
+                query: { "enabled": true, "available": true }
+            },
+        },
+        { $limit: 1 },
+        { $project: { enabled: 0, available: 0 } }
+    ]);
+}
