@@ -5,6 +5,7 @@ import * as chargingStationsController from "../controllers/chargingStationsCont
 import * as carsController from "../controllers/carsController.ts";
 import * as locationController from "../controllers/locationController.ts";
 import * as rechargingController from "../controllers/rechargeController.ts";
+import * as llmController from "../controllers/llmController.ts";
 
 const router = Router();
 
@@ -36,5 +37,7 @@ router.route('/cars/:id')
     .get(verifyLogin, carsController.readCar)
     .put(verifyLogin, carsController.updateCar)
     .delete(verifyLogin, carsController.deleteCar);
+
+router.post('/llm/search', verifyLogin, llmController.search);
 
 export default router;

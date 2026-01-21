@@ -4,19 +4,24 @@ dotenv.config();
 
 interface Config {
     port: number;
-    redisHost: string,
-    redisPort: number,
+    redisHost: string;
+    redisPort: number;
     jwtSecret: string;
+    hfSecret: string;
 }
 
 if (!process.env['JWT_SECRET']) {
     throw new Error("Missing JWT_SECRET in .env file");
+}
+if (!process.env['HF_SECRET']) {
+    throw new Error("Missing HF_SECRET in .env file");
 }
 const config: Config = {
     port: Number(process.env['PORT']) || 3000,
     redisHost: process.env['REDIS_HOST'] || 'redis',
     redisPort: Number(process.env['REDIS_PORT']) || 6379,
     jwtSecret: process.env['JWT_SECRET'],
+    hfSecret: process.env['HF_SECRET']
 };
 
 export default config;
