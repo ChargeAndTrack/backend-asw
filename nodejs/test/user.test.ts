@@ -14,10 +14,19 @@ describe("User tests", () => {
         token = res.body.token;
     });
 
-    it('Get user', async () => {
+    it('it should get a user', async () => {
         const res = await request(app)
             .get(`${BASE_PATH}/user`)
             .set("Authorization", token);
         assert.equal(res.status, 200);
     });
+
+    it("it should fail without a token when verifying the login", async () => {
+        const res = await request(app).get(`${BASE_PATH}/user`);
+        assert.equal(res.status, 400);
+        assert.equal(
+            String(res.body.message).trim().toLowerCase(),
+            String("Authorization required").trim().toLowerCase()
+        );
+    })
 });
