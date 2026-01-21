@@ -1,15 +1,18 @@
 import type { Request, Response } from "express";
 import config from "../config/config.ts";
 import { z } from "zod";
-import { llmResponseSchema } from "../zod_schemas/llmSchemas.ts";
+import { llmResponseSchema, type LlmResponseSchema } from "../zod_schemas/llmSchemas.ts";
+import { getClosestCS, getNearbyCS } from "./chargingStationsController.ts";
+import { resolveAddress } from "./locationController.ts";
+import type { LatitudeLongitudeDTO } from "../zod_schemas/locationSchemas.ts";
 
 const NUM_ATTEMPTS = 2;
 const HF_SECRET = config.hfSecret;
 const HF_URL = new URL("https://router.huggingface.co/v1/chat/completions");
 const HF_MODEL = "Qwen/Qwen2.5-7B-Instruct:together";
 const PROMPT = 'You are a charging stations query parser. You have to return ONLY a valid JSON following this schema: '
-    + '{ "intent": "AREA_SEARCH" or "CLOSEST", "address": string, "filters"?: { "minPowerKw"?: number } }  '
-    + 'Meanings: AREA_SEARCH = searching multiple charging stations in an area, '
+    + '{ "intent": "NEAR" or "CLOSEST", "address": string, "filters"?: { "minPowerKw"?: number } }  '
+    + 'Meanings: NEAR = searching multiple charging stations, '
     + 'CLOSEST = searching the closest charging station';
 
 // POST /llm/search
@@ -23,13 +26,11 @@ export const search = async (req: Request, res: Response): Promise<Response> => 
         for (let attempt = 1; attempt <= NUM_ATTEMPTS; attempt++) {
             console.log("Attempt ", attempt);
             const response = await callLlm(parsedQuery.data.q);
-            console.log("Raw response: " + response);
+            console.log("Llm raw response: " + response);
             const jsonResponse = JSON.parse(response);
             const parsedResponse = await llmResponseSchema.safeParseAsync(jsonResponse);
             if (parsedResponse.success) {
-                return res.status(200).json(parsedResponse.data);
-                // TODO specific calls
-                // return makeRequest(parsedResponse.data);
+                return await makeRequest(res, parsedResponse.data);
             }
         }
         return res.status(500).json({ message: "Invalid LLM response" });
@@ -62,4 +63,23 @@ async function callLlm(userQuery: string): Promise<string> {
     }
     const data = await response.json();
     return data.choices[0].message.content;
+}
+
+const DEFAULT_RADIUS = 5000;
+
+async function makeRequest(res: Response, data: LlmResponseSchema): Promise<Response> {
+    const location: LatitudeLongitudeDTO = await resolveAddress(data.address);
+    console.log("Location: lat " + location.lat + " lng " + location.lng);
+    switch (data.intent) {
+        case "NEAR":
+            const stations = await getNearbyCS({ lat: location.lat, lng: location.lng, radius: DEFAULT_RADIUS });
+            return res.status(200).json(stations);
+        case "CLOSEST":
+            const chargingStations = await getClosestCS(location);
+            if (chargingStations.length === 0) {
+                return res.status(404).json({ error: "No charging stations found" });
+            }
+            return res.status(200).json(chargingStations[0]);
+    }
+    // TODO ADD FILTERS
 }
