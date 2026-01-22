@@ -1,3 +1,45 @@
+## [2.0.0](https://github.com/ChargeAndTrack/backend-asw/compare/1.0.0...2.0.0) (2026-01-22)
+
+### ⚠ BREAKING CHANGES
+
+* **llm:** add filters in llm related queries; update openapi
+
+### Features
+
+* **llm:** add calls to logic (after obtaining llm json response); refine prompt and llmResponseSchema ([588ad7f](https://github.com/ChargeAndTrack/backend-asw/commit/588ad7fd638540e7de8985c38bc78aa900922de8))
+* **llm:** add filters in llm related queries; update openapi ([44730cd](https://github.com/ChargeAndTrack/backend-asw/commit/44730cd7d82179799821566269da75922b66768f))
+* **llm:** add route '/llm/search' and corresponding handler (partially complete); add llm zod schemas and HF_SECRET in config and .env.example ([3c5ed38](https://github.com/ChargeAndTrack/backend-asw/commit/3c5ed38294ed6a204a6225a8a756189fc143e40b))
+* **login:** change login response to have directly token as property, so update openapi ([6ac210a](https://github.com/ChargeAndTrack/backend-asw/commit/6ac210abd06d3f420c2c278ccaa9e4715b77d0a5))
+* **recharge:** add availability filter in stop recharge query ([60f783d](https://github.com/ChargeAndTrack/backend-asw/commit/60f783df70265bb4b868a80afd27dfcb16d967b9))
+
+### Bug Fixes
+
+* **ci:** rename build file dependency; inherit secrets ([8bdb9f7](https://github.com/ChargeAndTrack/backend-asw/commit/8bdb9f7dda5c52828ca35672c971aacdab939397))
+
+### Tests
+
+* add cars tests ([23dd007](https://github.com/ChargeAndTrack/backend-asw/commit/23dd00797d0e250210c27cfbf1e22be39626585a))
+* add charging stations tests ([65c699f](https://github.com/ChargeAndTrack/backend-asw/commit/65c699f396887e902e619a7a8501bce7dcd0928b))
+* add failing test for a get user request without passing the token ([e0b004e](https://github.com/ChargeAndTrack/backend-asw/commit/e0b004e9cf60cda6c01b7e91ee2844f556c749ed))
+* add llm tests ([873e761](https://github.com/ChargeAndTrack/backend-asw/commit/873e76157d53bfe39df5b5f7c5fe0b56509aaf22))
+* add location tests ([d5f6ca8](https://github.com/ChargeAndTrack/backend-asw/commit/d5f6ca8bdc6f49391bb044c3b0916f1f95c9048b))
+* add login, get user tests and run.test.ts as entrypoint to run all tests ([56a2990](https://github.com/ChargeAndTrack/backend-asw/commit/56a2990daefc87b6d97c6bddb87e3e839fc1ef57))
+* add recharge tests ([cb166de](https://github.com/ChargeAndTrack/backend-asw/commit/cb166de5984f8640ecfdc688b389f774ff6f3b38))
+* update location tests ([e70565b](https://github.com/ChargeAndTrack/backend-asw/commit/e70565b64b440c8e0778f0aa8e2a75ffae6d44dc))
+
+### Build and continuous integration
+
+* add HF_SECRET in test job ([f537c19](https://github.com/ChargeAndTrack/backend-asw/commit/f537c19c4690de7008987b6e840869ff5ab68e06))
+* **tests:** add supertest dependency; create a separate docker-compose file and setup accordingly ([8aa5025](https://github.com/ChargeAndTrack/backend-asw/commit/8aa5025fa2a29eaf794d69b7f2c43bf47b798475))
+* **tests:** add test job ([1eb571b](https://github.com/ChargeAndTrack/backend-asw/commit/1eb571bbf7a0bd57efe9f9b3980fec5c98fc830c))
+
+### Refactoring
+
+* extract logic into separate functions ([5237931](https://github.com/ChargeAndTrack/backend-asw/commit/5237931ac4b15c2ad87fbb3d5fd906f17a93234e))
+* move socket.io in a separate file ([60886a2](https://github.com/ChargeAndTrack/backend-asw/commit/60886a2c0ff7fc05a15029d40e2e8c6f59dd20a6))
+* **test:** extract get, post and put charging stations requests into separate functions ([4a013e2](https://github.com/ChargeAndTrack/backend-asw/commit/4a013e294a18291fa2529fa8eb91f2d4bbe50825))
+* **test:** extract login request in a function; rename cars tests ([b9f677b](https://github.com/ChargeAndTrack/backend-asw/commit/b9f677ba3b25dc0ae594982f3abc85a3c035bdfb))
+
 ## [1.0.0](https://github.com/ChargeAndTrack/backend-asw/compare/0.4.0...1.0.0) (2026-01-19)
 
 ### ⚠ BREAKING CHANGES
