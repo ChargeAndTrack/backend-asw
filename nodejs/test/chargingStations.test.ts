@@ -116,7 +116,7 @@ export async function chargingStationsPostRequest(token: string, path?: string, 
         .send(body);
 }
 
-async function chargingStationsPutRequest(token: string, path?: string, body?: any) {
+export async function chargingStationsPutRequest(token: string, path?: string, body?: any) {
     if (path === undefined) {
         path = "";
     }

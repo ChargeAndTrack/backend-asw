@@ -10,6 +10,7 @@ import './chargingStations.test.ts';
 import './cars.test.ts';
 import './location.test.ts';
 import './llm.test.ts';
+import './recharge.test.ts';
 
 after(async () => {
     await worker.close();
