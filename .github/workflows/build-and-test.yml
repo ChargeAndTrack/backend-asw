@@ -32,10 +32,8 @@ jobs:
       - name: Docker compose build
         run: docker compose -f docker-compose.test.yml build
       - name: Docker compose up
-        env:
-          HF_SECRET: ${{ secrets.HF_SECRET }}
         run: |
-          sed -i "s/^HF_SECRET=.*/HF_SECRET=$HF_SECRET/" ./nodejs/.env
+          sed -i "s/^HF_SECRET=.*/HF_SECRET=${{ secrets.HF_SECRET }}/" ./nodejs/.env
           docker compose -f docker-compose.test.yml up --abort-on-container-exit --exit-code-from nodejsapp-test
 
   success:
