@@ -52,13 +52,13 @@ export const stopRecharge = async (req: Request, res: Response): Promise<Respons
     const parsedBody: RechargeDTO = await rechargeSchema.parseAsync(req.body);
     const schedulers = await rechargeQueue.getJobSchedulers();
     if (schedulers) {
-        const chargingStation = await chargingStationModel.findByIdAndUpdate(
-            req.params["id"],
+        const chargingStation = await chargingStationModel.findOneAndUpdate(
+            { _id: req.params["id"], available: false },
             { $set: { "available": true } },
             { new: true, runValidators: true }
         );
         if (!chargingStation) {
-            return res.status(404).json({ message: "Charging station not found" });
+            return res.status(404).json({ message: "Charging station not found or not currently charging" });
         }
         rechargeQueue.removeJobScheduler(schedulers.find(s => s.name === `recharge_${parsedBody.carId}`)?.key!)
         io.emit('stop-recharge', `car_${parsedBody.carId}`);
