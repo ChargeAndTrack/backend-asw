@@ -18,8 +18,8 @@ describe("Location tests", () => {
             .set("Authorization", token)
             .query({ q: "Via dell'Università, Cesena" });
         assert.equal(res.status, 200);
-        assert.ok("latitude" in res.body);
-        assert.ok("longitude" in res.body);
+        assert.ok("lat" in res.body);
+        assert.ok("lng" in res.body);
     });
 
     it('it should get the address corresponding to the given coordinates', async () => {
