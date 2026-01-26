@@ -18,7 +18,8 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
         const token = jwt.sign({ _id: user._id, role: user.role }, JWT_SECRET, { expiresIn: "3d" });
         return res.status(200).json({
             message: "Login successful",
-            "token": token,
+            role: user.role,
+            "token": token
         });
     } catch (err) {
         console.log("Login failed " + err);

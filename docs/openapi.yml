@@ -47,6 +47,9 @@ paths:
               schema:
                 type: object
                 properties:
+                  role:
+                    description: user role
+                    type: string
                   token:
                     description: authorization token
                     type: string

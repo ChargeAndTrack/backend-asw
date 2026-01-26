@@ -18,6 +18,7 @@ describe("Login tests", () => {
     it("it should perform the login", async () => {
         const res = await login(loginAdminBody);
         assert.equal(res.status, 200);
+        assert.ok("role" in res.body);
         assert.ok("token" in res.body);
     });
 });
