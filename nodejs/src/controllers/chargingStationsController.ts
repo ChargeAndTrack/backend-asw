@@ -3,9 +3,10 @@ import { chargingStationModel, type ChargingStation } from '../models/chargingSt
 import { addChargingStationSchema, updateChargingStationSchema } from '../zod_schemas/chargingStationsSchemas.ts';
 import type { AddChargingStationDTO, UpdateChargingStationDTO } from '../zod_schemas/chargingStationsSchemas.ts';
 import { ZodError } from 'zod';
-import { latitudeLongitudeSchema, nearChargingStationsSchema } from '../zod_schemas/locationSchemas.ts';
-import type { LatitudeLongitudeDTO, NearChargingStationsDTO } from '../zod_schemas/locationSchemas.ts';
-import type { FiltersSchema } from '../zod_schemas/llmSchemas.ts';
+import { closestChargingStationsSchema, nearChargingStationsSchema } from '../zod_schemas/locationSchemas.ts';
+import type { ClosestChargingStationsDTO, LatitudeLongitudeDTO, NearChargingStationsDTO } from '../zod_schemas/locationSchemas.ts';
+import type { LlmFiltersSchema } from '../zod_schemas/llmSchemas.ts';
+import { Roles, type Role } from '../models/user.ts';
 
 // GET /charging-stations
 export const listChargingStations = async (req: Request, res: Response): Promise<Response> => {
@@ -95,35 +96,43 @@ export const getNearbyChargingStations = async (req: Request, res: Response): Pr
     console.log("getNearbyChargingStations");
     try {
         const parsedQuery: NearChargingStationsDTO = await nearChargingStationsSchema.parseAsync(req.query);
-        return res.status(200).json(getNearbyCS(parsedQuery));
+        return res.status(200).json(await getNearbyCS(req.user.role as Role, parsedQuery));
     } catch (error) {
         console.log("Error: " + error);
         if (error instanceof ZodError) {
             return res.status(400).json({ message: "Invalid request data"});
         }
+        if (error instanceof Error && error.message === "Only admin users can view disabled charging stations") {
+            return res.status(403).json({ message: error.message });
+        }
         return res.sendStatus(500);
     }
 };
 
-export async function getNearbyCS(data: NearChargingStationsDTO, filters: FiltersSchema = {}): Promise<ChargingStation[]> {
+export async function getNearbyCS(role: Role, data: NearChargingStationsDTO, llmFilters: LlmFiltersSchema = {})
+        : Promise<ChargingStation[]> {
     const EARTH_RADIUS_METERS = 6378137;
-    return await chargingStationModel.find({
-        location: {
-            $geoWithin: {
-                $centerSphere: [[data.lng, data.lat], data.radius / EARTH_RADIUS_METERS]
-            }
+    const onlyEnabled = getOnlyEnabledIfAllowed(data.onlyEnabled, role);
+    return await chargingStationModel.find(
+        {
+            location: {
+                $geoWithin: {
+                    $centerSphere: [[data.lng, data.lat], data.radius / EARTH_RADIUS_METERS]
+                }
+            },
+            ...(onlyEnabled ? { enabled: true } : {}),
+            ...(llmFilters.minPowerKw ? { power: { $gte: llmFilters.minPowerKw } } : {}),
         },
-        enabled: true,
-        ...(filters.minPowerKw ? { power: { $gte: filters.minPowerKw } } : {}),
-    }).select("-enabled");
+        { ...(onlyEnabled ? { enabled: 0  } : {}) }
+    );
 }
 
 // GET /charging-stations/closest
 export const getClosestChargingStation = async (req: Request, res: Response): Promise<Response> => {
     console.log("getClosestChargingStation");
     try {
-        const parsedQuery: LatitudeLongitudeDTO = await latitudeLongitudeSchema.parseAsync(req.query);
-        const stations = await getClosestCS(parsedQuery);
+        const parsedQuery: ClosestChargingStationsDTO = await closestChargingStationsSchema.parseAsync(req.query);
+        const stations = await getClosestCS(req.user.role as Role, parsedQuery);
         if (stations.length === 0) {
             return res.status(404).json({ error: "No charging stations found" });
         }
@@ -133,11 +142,15 @@ export const getClosestChargingStation = async (req: Request, res: Response): Pr
         if (error instanceof ZodError) {
             return res.status(400).json({ message: "Invalid request data"});
         }
+        if (error instanceof Error && error.message === "Only admin users can view disabled charging stations") {
+            return res.status(403).json({ message: error.message });
+        }
         return res.sendStatus(500);
     }
 };
 
-export async function getClosestCS(data: LatitudeLongitudeDTO, filters: FiltersSchema = {}) {
+export async function getClosestCS(role: Role, data: ClosestChargingStationsDTO, filters: LlmFiltersSchema = {}) {
+    const onlyEnabledAndAvailable = getOnlyEnabledIfAllowed(data.onlyEnabledAndAvailable, role);
     return await chargingStationModel.aggregate([
         {
             $geoNear: {
@@ -146,13 +159,22 @@ export async function getClosestCS(data: LatitudeLongitudeDTO, filters: FiltersS
                 distanceField: "distance",
                 spherical: true,
                 query: {
-                    "enabled": true,
-                    "available": true,
+                    ...((onlyEnabledAndAvailable ? { enabled: true, available: true } : {})),
                     ...(filters.minPowerKw ? { power: { $gte: filters.minPowerKw } } : {}),
                 }
             },
         },
         { $limit: 1 },
-        { $project: { enabled: 0, available: 0 } }
+        ...(onlyEnabledAndAvailable ? [{ $project: { enabled: 0, available: 0 } }] : [])
     ]);
+}
+
+function getOnlyEnabledIfAllowed(onlyEnabledIntent: boolean | undefined, role: Role): boolean {
+    let onlyEnabled = true;
+    if (onlyEnabledIntent === false && role !== Roles.Admin) {
+        throw new Error("Only admin users can view disabled charging stations");
+    } else if (onlyEnabledIntent === false && role === Roles.Admin) {
+        onlyEnabled = false;
+    }
+    return onlyEnabled;
 }

@@ -261,6 +261,11 @@ paths:
           required: true
           schema:
             type: number
+        - name: onlyEnabled
+          in: query
+          required: false
+          schema:
+            type: boolean
       responses:
         '200':
           description: list of nearby charging stations
@@ -290,6 +295,11 @@ paths:
           schema:
             type: number
             format: float
+        - name: onlyEnabledAndAvailable
+          in: query
+          required: false
+          schema:
+            type: boolean
       responses:
         '200':
           description: closest charging station

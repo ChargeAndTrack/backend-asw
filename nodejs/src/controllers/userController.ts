@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
-import { userModel, Role } from "../models/user.ts";
+import { userModel, Roles } from "../models/user.ts";
 import jwt from "jsonwebtoken";
 import config from "../config/config.ts";
 import type { Types } from "mongoose";
@@ -39,7 +39,7 @@ export const verifyLogin = async (req: Request, res: Response, next: NextFunctio
 };
 
 export const verifyAdminRole = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
-    if (req.user.role !== Role.Admin) {
+    if (req.user.role !== Roles.Admin) {
         return res.status(403).json({ message: "User " + req.user.username + " is not admin" });
     }
     return next();

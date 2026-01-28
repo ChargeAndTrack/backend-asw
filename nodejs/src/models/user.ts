@@ -9,12 +9,12 @@ export interface User {
     cars: Car[];
 }
 
-export const Role = {
+export const Roles = {
     "Admin": 'ADMIN',
     "BaseUser": 'BASE_USER'
 } as const;
 
-export type Role = (typeof Role)[keyof typeof Role]
+export type Role = (typeof Roles)[keyof typeof Roles]
 
 const userSchema = new mongoose.Schema<User>({
     username: { type: String, required: true },

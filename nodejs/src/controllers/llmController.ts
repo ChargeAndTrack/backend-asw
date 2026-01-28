@@ -5,6 +5,7 @@ import { llmResponseSchema, type LlmResponseSchema } from "../zod_schemas/llmSch
 import { getClosestCS, getNearbyCS } from "./chargingStationsController.ts";
 import { resolveAddress } from "./locationController.ts";
 import type { LatitudeLongitudeDTO } from "../zod_schemas/locationSchemas.ts";
+import type { Role } from "../models/user.ts";
 
 const NUM_ATTEMPTS = 2;
 const HF_SECRET = config.hfSecret;
@@ -30,7 +31,7 @@ export const search = async (req: Request, res: Response): Promise<Response> => 
             const jsonResponse = JSON.parse(response);
             const parsedResponse = await llmResponseSchema.safeParseAsync(jsonResponse);
             if (parsedResponse.success) {
-                return await makeRequest(res, parsedResponse.data);
+                return await makeRequest(res, req.user.role as Role, parsedResponse.data);
             }
         }
         return res.status(500).json({ message: "Invalid LLM response" });
@@ -67,18 +68,19 @@ async function callLlm(userQuery: string): Promise<string> {
 
 const DEFAULT_RADIUS = 5000;
 
-async function makeRequest(res: Response, data: LlmResponseSchema): Promise<Response> {
+async function makeRequest(res: Response, role: Role, data: LlmResponseSchema): Promise<Response> {
     const location: LatitudeLongitudeDTO = await resolveAddress(data.address);
     console.log("Location: lat " + location.lat + " lng " + location.lng);
     switch (data.intent) {
         case "NEAR":
             const stations = await getNearbyCS(
+                role,
                 { lat: location.lat, lng: location.lng, radius: DEFAULT_RADIUS },
                 data.filters
             );
             return res.status(200).json(stations);
         case "CLOSEST":
-            const chargingStations = await getClosestCS(location, data.filters);
+            const chargingStations = await getClosestCS(role, location, data.filters);
             if (chargingStations.length === 0) {
                 return res.status(404).json({ error: "No charging stations found" });
             }
