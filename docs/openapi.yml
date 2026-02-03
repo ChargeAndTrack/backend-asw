@@ -244,19 +244,20 @@ paths:
       description: Get charging stations near a location
       operationId: getNearbyChargingStations
       parameters:
-        - name: latitude
+        - name: lng
           in: query
           required: true
           schema:
             type: number
             format: float
-        - name: longitude
+        - name: lat
           in: query
           required: true
           schema:
             type: number
             format: float
         - name: radius
+          description: radius in meters
           in: query
           required: true
           schema:
@@ -283,13 +284,13 @@ paths:
       description: Get the closest charging station to a location
       operationId: getClosestChargingStation
       parameters:
-        - name: latitude
+        - name: lng
           in: query
           required: true
           schema:
             type: number
             format: float
-        - name: longitude
+        - name: lat
           in: query
           required: true
           schema:
@@ -489,13 +490,13 @@ paths:
       description: Get address from coordinates
       operationId: reverseCoordinatesToAddress
       parameters:
-        - name: latitude
+        - name: lat
           in: query
           required: true
           schema:
             type: number
             format: float
-        - name: longitude
+        - name: lng
           in: query
           required: true
           schema:
@@ -567,6 +568,8 @@ components:
           type: number
         currentBattery:
           type: number
+        isCharging:
+          type: boolean
     ChargingStation:
       type: object
       properties:
@@ -580,6 +583,8 @@ components:
           type: boolean
         location:
           $ref: '#/components/schemas/Location'
+        currentCarId:
+          type: string
     Location:
       type: object
       properties:

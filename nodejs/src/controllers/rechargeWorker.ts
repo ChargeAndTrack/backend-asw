@@ -19,19 +19,22 @@ export const rechargeWorker = () => {
         if (!userWithCar) {
             throw new Error("Car not found");
         }
-        const currentBattery: number | undefined = userWithCar!.cars[0]!.currentBattery;
+        const currentBattery: number | undefined = userWithCar.cars[0]!.currentBattery;
         if (currentBattery) {
             io.to(`car:${carId}`).emit('recharge-update', { id: carId, level: currentBattery });
             console.log("Battery update to " + currentBattery);
             if (currentBattery >= 100) {
                 const chargingStation = await chargingStationModel.findByIdAndUpdate(
                     chargingStationId,
-                    { $set: { "available": true } },
+                    { $set: { "available": true }, $unset: { currentCarId: "" } },
                     { new: true, runValidators: true }
                 );
                 if (!chargingStation) {
                     throw new Error("Charging station not found");
                 }
+                await updateCarLogic(userId, carId, UpdateCarMethod.Set, { "cars.$.isCharging": false });
+                io.to(`chargingStation:${chargingStation._id}`)
+                    .emit("charging-station-updated", { id: chargingStation._id });
                 job.repeatJobKey ?
                     await rechargeQueue.removeJobScheduler(job.repeatJobKey) :
                     await rechargeQueue.removeJobScheduler(carId);
