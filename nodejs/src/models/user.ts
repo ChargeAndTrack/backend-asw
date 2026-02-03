@@ -1,6 +1,6 @@
 import type { Car } from './car.ts';
 import { carSchema } from './car.ts';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 
 export interface User {
     username: string;
@@ -27,6 +27,7 @@ export const userModel = mongoose.model('User', userSchema, 'users');
 
 export const UpdateCarMethod = {
     "Set": '$set',
+    "Unset": '$unset',
     "Inc": '$inc'
 } as const;
 
@@ -43,3 +44,14 @@ export const updateCarLogic = async (
         { new: true, runValidators: true }
     ).select({ cars: { $elemMatch: { _id: carId } } })
     .lean<User>();
+
+export const getUserCars = async (userId: Types.ObjectId): Promise<User | null> => {
+    return await userModel.findById(userId).select("cars");
+}
+
+export const getUserCar = async ( userId: Types.ObjectId, carId: string | undefined): Promise<User | null> => {
+    return await userModel.findOne(
+        { _id: userId, "cars._id": carId },
+        { cars: { $elemMatch: { _id: carId } } }
+    );
+}

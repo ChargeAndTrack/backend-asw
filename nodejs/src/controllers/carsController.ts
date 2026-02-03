@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { updateCarLogic, UpdateCarMethod, userModel } from "../models/user.ts";
+import { getUserCar, getUserCars, updateCarLogic, UpdateCarMethod, userModel } from "../models/user.ts";
 import { addCarSchema, updateCarSchema, type AddCarDTO, type UpdateCarDTO } from "../zod_schemas/carsSchemas.ts";
 import { ZodError } from "zod";
 
@@ -8,7 +8,7 @@ export const readUserCars = async (req: Request, res: Response): Promise<Respons
     console.log("readUserCars");
     console.log("UserId: " + req.user.id + " Username: " + req.user.username + " Role: " + req.user.role);
     try {
-        const user = await userModel.findById(req.user.id).select("cars");
+        const user = await getUserCars(req.user.id);
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
@@ -26,15 +26,19 @@ export const addUserCar = async (req: Request, res: Response): Promise<Response>
     console.log("UserId: " + req.user.id + " Username: " + req.user.username + " Role: " + req.user.role);
     try {
         const parsedBody: AddCarDTO = await addCarSchema.parseAsync(req.body);
-        const user = await userModel.findByIdAndUpdate(
+        const user = await getUserCars(req.user.id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        if (user.cars.some(car => car.plate === parsedBody.plate)) {
+            return res.status(400).json({ message: "Car with the same plate already exists" });
+        }
+        const updatedUser = await userModel.findByIdAndUpdate(
             req.user.id,
             { $push: { cars: parsedBody } },
             { new: true, runValidators: true }
         );
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-        return res.status(201).json(user.cars?.at(-1));
+        return res.status(201).json(updatedUser?.cars?.at(-1));
     } catch (err) {
         console.log("Error:", err);
         if (err instanceof ZodError) {
@@ -50,10 +54,7 @@ export const readCar = async (req: Request, res: Response): Promise<Response> =>
     console.log("Car ID: " + req.params["id"]);
     console.log("UserId: " + req.user.id + " Username: " + req.user.username + " Role: " + req.user.role);
     try {
-        const userWithCar = await userModel.findOne(
-            { _id: req.user.id, "cars._id": req.params["id"] },
-            { cars: { $elemMatch: { _id: req.params["id"] } } }
-        );
+        const userWithCar = await getUserCar(req.user.id, req.params["id"]);
         if (!userWithCar) {
             return res.status(404).json({ message: "Car not found" });
         }
