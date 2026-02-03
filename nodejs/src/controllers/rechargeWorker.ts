@@ -21,7 +21,7 @@ export const rechargeWorker = () => {
         }
         const currentBattery: number | undefined = userWithCar!.cars[0]!.currentBattery;
         if (currentBattery) {
-            io.to(`car_${carId}`).emit('rechargeUpdate', { level: currentBattery });
+            io.to(`car:${carId}`).emit('recharge-update', { id: carId, level: currentBattery });
             console.log("Battery update to " + currentBattery);
             if (currentBattery >= 100) {
                 const chargingStation = await chargingStationModel.findByIdAndUpdate(

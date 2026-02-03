@@ -6,7 +6,6 @@ import { rechargeSchema, type RechargeDTO } from '../zod_schemas/rechargeSchemas
 import { randomInt } from 'node:crypto';
 import { Queue } from 'bullmq';
 import config from '../config/config.ts';
-import { io } from '../socket.ts';
 
 export const rechargeQueue = new Queue('recharge-queue', {
     connection: {
@@ -27,7 +26,6 @@ export const startRecharge = async (req: Request, res: Response): Promise<Respon
         return res.status(400).json({ message: "Charging station not available" });
     }
     const parsedBody: RechargeDTO = await rechargeSchema.parseAsync(req.body);
-    io.emit('start-recharge', `car_${parsedBody.carId}`);
     const userWithCar = await updateCarLogic(
         userId,
         parsedBody.carId,
@@ -60,8 +58,7 @@ export const stopRecharge = async (req: Request, res: Response): Promise<Respons
         if (!chargingStation) {
             return res.status(404).json({ message: "Charging station not found or not currently charging" });
         }
-        rechargeQueue.removeJobScheduler(schedulers.find(s => s.name === `recharge_${parsedBody.carId}`)?.key!)
-        io.emit('stop-recharge', `car_${parsedBody.carId}`);
+        rechargeQueue.removeJobScheduler(schedulers.find(s => s.name === `recharge_${parsedBody.carId}`)?.key!);
         res.status(200).json({ message: "Stop recharge" });
     }
 };
