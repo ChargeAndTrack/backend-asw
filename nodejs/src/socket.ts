@@ -11,16 +11,30 @@ export const initSocket = (server: HttpServer) => {
     });
     io.on('connection', (socket) => {
         console.log('a user connected');
+        
+        socket.on("join-charging-stations", (chargingStationIds: string[]) => {
+            console.log("Joining charging stations: ", chargingStationIds);
+            chargingStationIds.forEach((id) => {
+                socket.join(`chargingStation:${id}`);
+            });
+        });
 
-        socket.on('start-recharge', (id: string) => {
-            socket.join(`car:${id}`);
-            console.log("Join the room: " + `car:${id}`);
+        socket.on("leave-charging-stations", (chargingStationIds: string[]) => {
+            console.log("Leaving charging stations: ", chargingStationIds);
+            chargingStationIds.forEach((id) => {
+                socket.leave(`chargingStation:${id}`);
+            });
+        });
+
+        socket.on('start-recharge', (carId: string, chargingStationId: string) => {
+            socket.join(`car:${carId}`);
+            console.log("Join the room: " + `car:${carId}`);
         });
 
         socket.on('stop-recharge', (id: string) => {
             socket.leave(`car:${id}`);
             console.log("Left the room: " + `car:${id}`);
-        })
+        });
 
         socket.on('disconnect', () => {
             console.log('user disconnected');
