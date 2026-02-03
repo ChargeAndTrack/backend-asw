@@ -13,7 +13,7 @@ export const readUserCars = async (req: Request, res: Response): Promise<Respons
             return res.status(404).json({ message: "User not found" });
         }
         console.log("Found user: ", user);
-        return res.status(200).json({ cars: user.cars });
+        return res.status(200).json(user.cars);
     } catch (err) {
         console.log("Error:", err);
         return res.sendStatus(500);
