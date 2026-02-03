@@ -12,7 +12,7 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
         const loginBody: LoginDTO = await loginSchema.parseAsync(req.body);
         const user = await userModel.findOne(loginBody);
         if (!user) {
-            return res.status(404).send("Login failed, user with these credentials not found");
+            return res.status(404).json({ message: "Invalid credentials" });
         }
         console.log("Login successful, role: " + user.role);
         const token = jwt.sign({ _id: user._id, role: user.role }, JWT_SECRET, { expiresIn: "3d" });
@@ -23,6 +23,6 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
         });
     } catch (err) {
         console.log("Login failed " + err);
-        return res.status(400).send("Login failed");
+        return res.sendStatus(500);
     }
 };

@@ -82,7 +82,7 @@ async function makeRequest(res: Response, role: Role, data: LlmResponseSchema): 
         case "CLOSEST":
             const chargingStations = await getClosestCS(role, location, data.filters);
             if (chargingStations.length === 0) {
-                return res.status(404).json({ error: "No charging stations found" });
+                return res.status(404).json({ message: "No charging stations found" });
             }
             return res.status(200).json(chargingStations[0]);
     }

@@ -4,7 +4,7 @@ import { addChargingStationSchema, updateChargingStationSchema } from '../zod_sc
 import type { AddChargingStationDTO, UpdateChargingStationDTO } from '../zod_schemas/chargingStationsSchemas.ts';
 import { ZodError } from 'zod';
 import { closestChargingStationsSchema, nearChargingStationsSchema } from '../zod_schemas/locationSchemas.ts';
-import type { ClosestChargingStationsDTO, LatitudeLongitudeDTO, NearChargingStationsDTO } from '../zod_schemas/locationSchemas.ts';
+import type { ClosestChargingStationsDTO, NearChargingStationsDTO } from '../zod_schemas/locationSchemas.ts';
 import type { LlmFiltersSchema } from '../zod_schemas/llmSchemas.ts';
 import { Roles, type Role } from '../models/user.ts';
 
@@ -15,7 +15,7 @@ export const listChargingStations = async (req: Request, res: Response): Promise
         const chargingStation = await chargingStationModel.find();
         return res.status(200).json(chargingStation);
     } catch (error) {
-        return res.send(error)
+        return res.sendStatus(500);
     }
 };
 
@@ -41,7 +41,7 @@ export const getChargingStation = async (req: Request, res: Response): Promise<R
     try {
         const chargingStation = await chargingStationModel.findById(req.params["id"]);
         if (!chargingStation) {
-            return res.status(404).send("Charging station not found");
+            return res.status(404).json({ message: "Charging station not found" });
         }
         console.log("Charging station: " + chargingStation);
         return res.status(200).json(chargingStation);
@@ -62,7 +62,7 @@ export const updateChargingStation = async (req: Request, res: Response): Promis
             { new: true, runValidators: true }
         );
         if (!chargingStation) {
-            return res.status(404).send("Charging station not found");
+            return res.status(404).json({ message: "Charging station not found" });
         }
         console.log("Updated charging station to " + chargingStation);
         return res.status(200).json(chargingStation);
@@ -81,10 +81,10 @@ export const removeChargingStation = async (req: Request, res: Response): Promis
         console.log("Remove charging station request: " + req.params["id"]);
         const chargingStation = await chargingStationModel.findByIdAndDelete(req.params["id"]);
         if (!chargingStation) {
-            return res.status(404).send("Charging station not found")
+            return res.status(404).json({ message: "Charging station not found" });
         }
         console.log("Removed charging station: " + chargingStation);
-        return res.status(200).send("Charging station successfully removed");
+        return res.status(200).json({ message: "Charging station successfully removed" });
     } catch (error) {
         console.log("Fail removing a charging station " + error);
         return res.sendStatus(500);
@@ -165,7 +165,7 @@ export async function getClosestCS(role: Role, data: ClosestChargingStationsDTO,
             },
         },
         { $limit: 1 },
-        ...(onlyEnabledAndAvailable ? [{ $project: { enabled: 0, available: 0 } }] : [])
+        ...(onlyEnabledAndAvailable ? [{ $project: { enabled: 0 } }] : [])
     ]);
 }
 
