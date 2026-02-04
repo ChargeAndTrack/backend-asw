@@ -24,7 +24,7 @@ describe("Cars tests", () => {
             .get(`${BASE_PATH}/cars`)
             .set("Authorization", token);
         assert.equal(res.status, 200);
-        assert.equal(res.body.cars.length, 3);
+        assert.equal(res.body.length, 3);
     });
 
     it('it should add a car', async () => {
@@ -73,7 +73,7 @@ async function deleteAllUserCars(token: string) {
     const res = await request(app)
         .get(`${BASE_PATH}/cars`)
         .set("Authorization", token);
-    const cars = res.body.cars;
+    const cars = res.body;
     for (const car of cars) {
         await request(app)
             .delete(`${BASE_PATH}/cars/${car._id}`)

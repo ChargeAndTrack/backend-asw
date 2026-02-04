@@ -1,4 +1,4 @@
-import { describe, it, beforeEach } from 'node:test';
+import { describe, it, before } from 'node:test';
 import assert from 'node:assert/strict';
 import request from 'supertest';
 import app from '../src/app.ts';
@@ -17,7 +17,7 @@ describe("Recharge tests", () => {
     let chargingStationId: string = "";
     let carId: string = "";
 
-    beforeEach(async () => {
+    before(async () => {
         const res = await login(loginAdminBody);
         token = res.body.token;
         const chargingStationBody: AddChargingStationDTO = {
@@ -58,7 +58,7 @@ describe("Recharge tests", () => {
 
         it('it should fail to stop a recharge if the charging station is not charging', async () => {
             const res = await stopRechargeRequest(token, `${chargingStationId}`, carId);
-            assert.equal(res.status, STATUS_CODE_NOT_FOUND);
+            assert.equal(res.status, STATUS_CODE_BAD_REQUEST);
         });
     })
 });
