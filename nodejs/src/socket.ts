@@ -6,7 +6,7 @@ export let io: Server;
 export const initSocket = (server: HttpServer) => {
     io = new Server(server, {
         cors: {
-            origin: "http://localhost:5173"
+            origin: ["http://localhost:5173", "http://localhost:4173"]
         }
     });
     io.on('connection', (socket) => {
@@ -26,7 +26,7 @@ export const initSocket = (server: HttpServer) => {
             });
         });
 
-        socket.on('start-recharge', (carId: string, chargingStationId: string) => {
+        socket.on('start-recharge', (carId: string) => {
             socket.join(`car:${carId}`);
             console.log("Join the room: " + `car:${carId}`);
         });
