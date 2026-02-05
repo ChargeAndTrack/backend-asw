@@ -2,14 +2,14 @@ import { z } from 'zod';
 import { geoPointSchema } from './locationSchemas.ts';
 
 export const addChargingStationSchema = z.object({
-    power: z.number(),
+    power: z.number().positive(),
     location: geoPointSchema
 });
 
 export type AddChargingStationDTO = z.infer<typeof addChargingStationSchema>;
 
 export const updateChargingStationSchema = z.object({
-    power: z.number().optional(),
+    power: z.number().positive().optional(),
     available: z.boolean().optional(),
     enabled: z.boolean().optional(),
     location: geoPointSchema.optional()
