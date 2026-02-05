@@ -73,12 +73,20 @@ export const updateCar = async (req: Request, res: Response): Promise<Response> 
     console.log("UserId: " + req.user.id + " Username: " + req.user.username + " Role: " + req.user.role);
     try {
         const parsedBody: UpdateCarDTO = await updateCarSchema.parseAsync(req.body);
+        const currentPlate = (await getUserCar(req.user.id, req.params["id"]))?.cars?.[0]?.plate;
+        if (!currentPlate) {
+            return res.status(404).json({ message: "Car not found" });
+        }
+        const userCars = await getUserCars(req.user.id);
+        if (userCars?.cars.some(car => car.plate !== currentPlate && car.plate === parsedBody.plate)) {
+            return res.status(400).json({ message: "Car with the same plate already exists" });
+        }
         const updates = Object.fromEntries(
             Object.entries(parsedBody).map(([key, value]) => [`cars.$.${key}`, value])
         );
         const userWithCar = await updateCarLogic(req.user.id, req.params["id"], UpdateCarMethod.Set, updates);
         if (!userWithCar) {
-            return res.status(404).json({ message: "Car not found" });
+            throw new Error("Could not update car");
         }
         return res.status(200).json(userWithCar.cars?.[0]);
     } catch (err) {
