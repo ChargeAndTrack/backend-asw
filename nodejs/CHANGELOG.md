@@ -1,3 +1,44 @@
+## [3.0.0](https://github.com/ChargeAndTrack/backend-asw/compare/2.0.0...3.0.0) (2026-02-05)
+
+### ⚠ BREAKING CHANGES
+
+* replace isCharging with currentChargingStationId in car interface and schema
+* add currentCarId to ChargingStation, add isCharging to Car, improve checks in rechargeController and add emits for charging-station-updated
+* add filters for enabled charging stations in getNearbyChargingStations and getClosestChargingStation handlers; update openapi
+* **login:** add user role to login response and update openapi
+
+### Features
+
+* add cors to express app ([d9dc09f](https://github.com/ChargeAndTrack/backend-asw/commit/d9dc09feaf0ee9195d1bf9ddf78f2ea114c6820a))
+* add currentCarId to ChargingStation, add isCharging to Car, improve checks in rechargeController and add emits for charging-station-updated ([3c6e960](https://github.com/ChargeAndTrack/backend-asw/commit/3c6e960f6c84c90b593d7aa7858d060a39825610))
+* add filters for enabled charging stations in getNearbyChargingStations and getClosestChargingStation handlers; update openapi ([cab6790](https://github.com/ChargeAndTrack/backend-asw/commit/cab6790628cd4c415ea6e1972176963a2ade06ce))
+* change error response format as json ([11497ea](https://github.com/ChargeAndTrack/backend-asw/commit/11497ea7fb0ddc1bbab47a063238814ce81814ac))
+* **login:** add user role to login response and update openapi ([e65eb74](https://github.com/ChargeAndTrack/backend-asw/commit/e65eb745852994e0b3a563e84c5b321e05fb8d4a))
+* replace isCharging with currentChargingStationId in car interface and schema ([fd1379b](https://github.com/ChargeAndTrack/backend-asw/commit/fd1379ba1c8736da6bd77a0006730b4c7a591ccd))
+* **socket:** add listeners for join-charging-stations and leave-charging-stations ([dd67e8c](https://github.com/ChargeAndTrack/backend-asw/commit/dd67e8c60c6b8575c5ce9f82a1af12223e691865))
+
+### Bug Fixes
+
+* add positive number validation in zod schemas for charging station power ([ea0cd0b](https://github.com/ChargeAndTrack/backend-asw/commit/ea0cd0b8cee0c1d6da148399a38d89f6de5acfa4))
+* **cars:** adapt readUserCars response to openapi specification and check plate validity ([3edefad](https://github.com/ChargeAndTrack/backend-asw/commit/3edefad171973b058fc9c962160afc3f9229f70a))
+* **cars:** add unique plate check in updateCar and add positive number zod validation for car maxBattery ([278e3fb](https://github.com/ChargeAndTrack/backend-asw/commit/278e3fb10d86950d0c8814fe26bd3eaf712fa37a))
+* **socket:** add cors option to socket.io Server, remove listener for rechargeUpdate event and start/stop-recharge events emit, add carId to recharge-update event args ([30fd230](https://github.com/ChargeAndTrack/backend-asw/commit/30fd230665b5d7e1bcaded22d3161c0cf0ceec24))
+* **socket:** add cors origin address to server and remove chargingStationId parameter to start-recharge ([d175d38](https://github.com/ChargeAndTrack/backend-asw/commit/d175d38b659241eaccb6f4732f8158a434dc8613))
+* **test:** adapt cars and recharge tests to last changes ([0cb3774](https://github.com/ChargeAndTrack/backend-asw/commit/0cb3774565a5ee1ded374dbb72d85446187a382e))
+
+### Documentation
+
+* add asw report ([acf41c1](https://github.com/ChargeAndTrack/backend-asw/commit/acf41c101754c1be948d53c73d6bf0ac7aec3342))
+* update readme with complete usage instructions ([c774570](https://github.com/ChargeAndTrack/backend-asw/commit/c77457060015f6655466361a74335fd09e8fdf40))
+
+### Build and continuous integration
+
+* add cors dependency ([ced97da](https://github.com/ChargeAndTrack/backend-asw/commit/ced97da40f7c822d83a52176f0eeaf5d7fdb2353))
+
+### Refactoring
+
+* **cars:** extract getUserCars and getUserCar methods ([6427489](https://github.com/ChargeAndTrack/backend-asw/commit/6427489c4a5cd5d22086fce43f62298518aa0591))
+
 ## [2.0.0](https://github.com/ChargeAndTrack/backend-asw/compare/1.0.0...2.0.0) (2026-01-22)
 
 ### ⚠ BREAKING CHANGES
