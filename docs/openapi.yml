@@ -568,8 +568,8 @@ components:
           type: number
         currentBattery:
           type: number
-        isCharging:
-          type: boolean
+        currentChargingStationId:
+          type: string
     ChargingStation:
       type: object
       properties:

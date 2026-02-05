@@ -33,14 +33,14 @@ export const startRecharge = async (req: Request, res: Response): Promise<Respon
         if (!userWithCar) {
             return res.status(404).json({ message: "Car not found" });
         }
-        if (userWithCar.cars.at(0)?.isCharging) {
+        if (userWithCar.cars.at(0)?.currentChargingStationId) {
             return res.status(400).json({ message: "Car is already charging" });
         }
         await updateCarLogic(
             userId,
             parsedBody.carId,
             UpdateCarMethod.Set,
-            { "cars.$.currentBattery": randomInt(99), "cars.$.isCharging": true }
+            { "cars.$.currentBattery": randomInt(99), "cars.$.currentChargingStationId": chargingStation._id }
         );
         const updatedChargingStation = await chargingStationModel.findByIdAndUpdate(
             req.params["id"],
@@ -90,8 +90,8 @@ export const stopRecharge = async (req: Request, res: Response): Promise<Respons
             const userWithCar = await updateCarLogic(
                 req.user.id,
                 parsedBody.carId,
-                UpdateCarMethod.Set,
-                { "cars.$.isCharging": false }
+                UpdateCarMethod.Unset,
+                { "cars.$.currentChargingStationId": "" }
             );
             if (!userWithCar) {
                 return res.status(404).json({ message: "Car not found" });

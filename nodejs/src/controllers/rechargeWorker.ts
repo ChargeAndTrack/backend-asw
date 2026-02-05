@@ -32,7 +32,7 @@ export const rechargeWorker = () => {
                 if (!chargingStation) {
                     throw new Error("Charging station not found");
                 }
-                await updateCarLogic(userId, carId, UpdateCarMethod.Set, { "cars.$.isCharging": false });
+                await updateCarLogic(userId, carId, UpdateCarMethod.Unset, { "cars.$.currentChargingStationId": "" });
                 io.to(`chargingStation:${chargingStation._id}`)
                     .emit("charging-station-updated", { id: chargingStation._id });
                 job.repeatJobKey ?
